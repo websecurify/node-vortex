@@ -61,10 +61,10 @@ try {
 
 // ---
 
-var defaultProvider;
+var providerInstance;
 
 try {
-	defaultProvider = opt.options.provider ? providers.instance(opt.options.provider) : null;
+	providerInstance = opt.options.provider ? providers.instance(opt.options.provider) : null;
 } catch (e) {
 	console.error(e.message);
 	
@@ -78,7 +78,7 @@ var providerAction = opt.argv.length ? opt.argv[0] : 'status';
 // ---
 
 try {
-	engine.launch(vortexManifest, defaultProvider, providerAction, executionPlugins);
+	engine.launch(vortexManifest, providerInstance, providerAction, executionPlugins);
 } catch (e) {
 	console.error(e.message);
 	
