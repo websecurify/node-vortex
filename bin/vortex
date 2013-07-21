@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+
+// ---
+
+var path = require('path');
+
+// ---
+
+var opt = require('node-getopt')
+	.create([
+		['x' , 'vortex=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
+		['p' , 'provider=ARG', 'Specify the default provider.'],
+		['h' , 'help', 'Display this help.'],
+	])
+	.bindHelp()
+	.parseSystem();
+	
+// ---
+
+var lib = path.join(__dirname, '..', 'lib');
+var manifest = require(path.join(lib, 'manifest.js'));
+var plugins = require(path.join(lib, 'plugins.js'));
+var providers = require(path.join(lib, 'providers.js'));
+var engine = require(path.join(lib, 'engine.js'));
+
+// ---
+
+var vortexLocation;
+
+try {
+	vortexLocation = manifest.locate(opt.options.vortex);
+} catch (e) {
+	console.error(e.message);
+	
+	process.exit(2);
+}
+
+// ---
+
+var vortexManifest;
+
+try {
+	vortexManifest = manifest.load(vortexLocation);
+} catch (e) {
+	console.error(e.message);
+	
+	process.exit(3);
+}
+
+// ---
+
+var executionPlugins;
+
+try {
+	executionPlugins = plugins.obtain(vortexManifest);
+} catch (e) {
+	console.error(e.message);
+	
+	process.exit(4);
+}
+
+// ---
+
+var defaultProvider;
+
+try {
+	defaultProvider = opt.options.provider ? providers.instance(opt.options.provider) : null;
+} catch (e) {
+	console.error(e.message);
+	
+	process.exit(5);
+}
+
+// ---
+
+var providerAction = opt.argv.length ? opt.argv[0] : 'status';
+
+// ---
+
+try {
+	engine.launch(vortexManifest, defaultProvider, providerAction, executionPlugins);
+} catch (e) {
+	console.error(e.message);
+	
+	process.exit(6);
+}
