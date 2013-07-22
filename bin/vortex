@@ -10,6 +10,7 @@ var opt = require('node-getopt')
 	.create([
 		['x' , 'vortex=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
 		['p' , 'provider=ARG', 'Specify the default provider.'],
+		['v' , 'verbose+', 'Make it verbose.'],
 		['h' , 'help', 'Display this help.'],
 	])
 	.bindHelp()
@@ -18,10 +19,17 @@ var opt = require('node-getopt')
 // ---
 
 var lib = path.join(__dirname, '..', 'lib');
+var logger = require(path.join(lib, 'logger.js'));
 var manifest = require(path.join(lib, 'manifest.js'));
 var plugins = require(path.join(lib, 'plugins.js'));
 var providers = require(path.join(lib, 'providers.js'));
 var engine = require(path.join(lib, 'engine.js'));
+
+// ---
+
+if (opt.options.verbose) {
+	logger.setTransportsLevel(3 - (opt.options.verbose.length < 3 ? opt.options.verbose.length : 3));
+}
 
 // ---
 
