@@ -28,7 +28,7 @@ var engine = require(path.join(lib, 'engine.js'));
 // ---
 
 if (opt.options.verbose) {
-	logger.setTransportsLevel(3 - (opt.options.verbose.length < 3 ? opt.options.verbose.length : 3));
+	logger.setGlobalLevel(3 - (opt.options.verbose.length < 3 ? opt.options.verbose.length : 3));
 }
 
 // ---
