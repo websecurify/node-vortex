@@ -1,8 +1,9 @@
 {
 	"name": "vortex",
 	"version": "0.1.0",
+	"author": "Websecurify <contact@websecurify.com>",
 	"description": "Simple virtual machine management toolkit for nodejs.",
-	"main": "index.js",
+	"license": "MIT",
 	
 	"repository": {
 		"type": "git",
@@ -15,6 +16,16 @@
 		"amazon",
 		"virtualbox"
 	],
+	
+	"main": "index.js",
+	
+	"bin": {
+		"vortex": "./bin/vortex"
+	},
+	
+	"directories": {
+		"lib": "./lib/"
+	},
 	
 	"dependencies": {
 		"node-getopt": "0.2.3",
