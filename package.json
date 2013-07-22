@@ -1,11 +1,12 @@
 {
-	"name": "vortext",
+	"name": "vortex",
 	"version": "0.1.0",
 	"description": "Simple virtual machine management toolkit for nodejs.",
 	
 	"dependencies": {
 		"node-getopt": "0.2.3",
 		"aws-sdk": "1.4.0",
+		"winston": "0.7.2",
 		"roost": "latest"
 	}
 }
