@@ -8,7 +8,7 @@ var path = require('path');
 
 var opt = require('node-getopt')
 	.create([
-		['x' , 'vortex=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
+		['f' , 'file=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
 		['p' , 'provider=ARG', 'Specify the default provider.'],
 		['v' , 'verbose+', 'Make it verbose.'],
 		['h' , 'help', 'Display this help.'],
@@ -27,7 +27,7 @@ var engine = require(path.join(lib, 'engine.js'));
 
 // ---
 
-if (opt.options.verbose) {
+if (opt.options.hasOwnProperty('verbose')) {
 	logger.setGlobalLevel(3 - (opt.options.verbose.length < 3 ? opt.options.verbose.length : 3));
 }
 
@@ -36,7 +36,7 @@ if (opt.options.verbose) {
 var vortexLocation;
 
 try {
-	vortexLocation = manifest.locate(opt.options.vortex);
+	vortexLocation = manifest.locate(opt.options.file);
 } catch (e) {
 	console.error(e.message);
 	
@@ -57,10 +57,10 @@ try {
 
 // ---
 
-var executionPlugins;
+var vortexPlugins;
 
 try {
-	executionPlugins = plugins.obtain(vortexManifest);
+	vortexPlugins = plugins.obtain(vortexManifest);
 } catch (e) {
 	console.error(e.message);
 	
@@ -69,10 +69,10 @@ try {
 
 // ---
 
-var providerInstance;
+var vortexProvider;
 
 try {
-	providerInstance = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : null;
+	vortexProvider = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : null;
 } catch (e) {
 	console.error(e.message);
 	
@@ -85,8 +85,16 @@ var providerAction = opt.argv.length ? opt.argv[0] : 'status';
 
 // ---
 
+var callback = function (err) {
+	if (err) {
+		console.error(err.message);
+	}
+};
+
+// ---
+
 try {
-	engine.launch(vortexManifest, executionPlugins, providerInstance, providerAction);
+	engine.launch(opt, vortexManifest, vortexPlugins, vortexProvider, providerAction, callback);
 } catch (e) {
 	console.error(e.message);
 	
