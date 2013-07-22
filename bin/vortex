@@ -64,7 +64,7 @@ try {
 var providerInstance;
 
 try {
-	providerInstance = opt.options.provider ? providers.instance(opt.options.provider) : null;
+	providerInstance = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : null;
 } catch (e) {
 	console.error(e.message);
 	
