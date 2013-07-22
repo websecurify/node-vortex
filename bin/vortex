@@ -86,7 +86,7 @@ var providerAction = opt.argv.length ? opt.argv[0] : 'status';
 // ---
 
 try {
-	engine.launch(vortexManifest, providerInstance, providerAction, executionPlugins);
+	engine.launch(vortexManifest, executionPlugins, providerInstance, providerAction);
 } catch (e) {
 	console.error(e.message);
 	
