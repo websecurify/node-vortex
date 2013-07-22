@@ -2,6 +2,19 @@
 	"name": "vortex",
 	"version": "0.1.0",
 	"description": "Simple virtual machine management toolkit for nodejs.",
+	"main": "index.js",
+	
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/websecurify/node-vortex.git"
+	},
+	
+	"keywords": [
+		"node",
+		"virtual",
+		"amazon",
+		"virtualbox"
+	],
 	
 	"dependencies": {
 		"node-getopt": "0.2.3",
