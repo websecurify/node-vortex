@@ -1,6 +1,6 @@
 {
 	"name": "vortex",
-	"version": "0.5.2",
+	"version": "0.5.3",
 	"author": "Websecurify <contact@websecurify.com>",
 	"description": "Simple virtual machine management toolkit for nodejs.",
 	"license": "MIT",
