@@ -43,6 +43,8 @@ var vortexLocation;
 try {
 	vortexLocation = manifest.locate(opt.options.file);
 } catch (e) {
+	logger.exception(e);
+	
 	console.error(e.message);
 	
 	process.exit(2);
@@ -55,6 +57,8 @@ var vortexManifest;
 try {
 	vortexManifest = manifest.load(vortexLocation);
 } catch (e) {
+	logger.exception(e);
+	
 	console.error(e.message);
 	
 	process.exit(3);
@@ -67,6 +71,8 @@ var vortexPlugins;
 try {
 	vortexPlugins = plugins.obtain(vortexManifest);
 } catch (e) {
+	logger.exception(e);
+	
 	console.error(e.message);
 	
 	process.exit(4);
@@ -79,6 +85,8 @@ var vortexProvider;
 try {
 	vortexProvider = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : null;
 } catch (e) {
+	logger.exception(e);
+	
 	console.error(e.message);
 	
 	process.exit(5);
@@ -92,7 +100,11 @@ var providerAction = opt.argv.length ? opt.argv[0] : 'status';
 
 var callback = function (err) {
 	if (err) {
+		logger.exception(err);
+		
 		console.error(err.message);
+		
+		// NOTE: too late to exit the process at this stage
 	}
 };
 
@@ -101,6 +113,8 @@ var callback = function (err) {
 try {
 	engine.launch(opt, vortexManifest, vortexPlugins, vortexProvider, providerAction, callback);
 } catch (e) {
+	logger.exception(err);
+	
 	console.error(e.message);
 	
 	process.exit(6);
