@@ -113,7 +113,7 @@ var callback = function (err) {
 try {
 	engine.launch(opt, vortexManifest, vortexPlugins, vortexProvider, providerAction, callback);
 } catch (e) {
-	logger.exception(err);
+	logger.exception(e);
 	
 	console.error(e.message);
 	
