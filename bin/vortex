@@ -8,11 +8,11 @@ var path = require('path');
 
 var opt = require('node-getopt')
 	.create([
-		['f' , 'file=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
-		['p' , 'provider=ARG', 'Specify the default provider.'],
-		['v' , 'verbose+', 'Make it verbose.'],
+		['f', 'file=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
+		['p', 'provider=ARG', 'Specify the default provider.'],
+		['v', 'verbose+', 'Make it verbose.'],
 		['c', 'colorize', 'Make it pretty.'],
-		['h' , 'help', 'Display this help.'],
+		['h', 'help', 'Display this help.'],
 	])
 	.bindHelp()
 	.parseSystem();
