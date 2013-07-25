@@ -21,10 +21,10 @@ var opt = require('node-getopt')
 
 var lib = path.join(__dirname, '..', 'lib');
 var logger = require(path.join(lib, 'logger.js'));
-var manifest = require(path.join(lib, 'manifest.js'));
-var plugins = require(path.join(lib, 'plugins.js'));
-var providers = require(path.join(lib, 'providers.js'));
 var engine = require(path.join(lib, 'engine.js'));
+var plugins = require(path.join(lib, 'plugins.js'));
+var manifest = require(path.join(lib, 'manifest.js'));
+var providers = require(path.join(lib, 'providers.js'));
 
 // ---
 
