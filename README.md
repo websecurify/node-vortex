@@ -9,14 +9,14 @@
 
 # Introduction
 
-Vortex is a virtual machine management tool for [nodejs](http://nodejs.org/). It is similar to [Vagrant](http://vagrantup.com/). The rationale for writing this tool is to enable better management of development and production infrastructure at the same time. We could not easily achieve this with Vagrant so the this tool was written to fill the gap.
+Vortex is a virtual machine management tool. It is similar to [Vagrant](http://vagrantup.com/). The rationale for writing this tool is to enable better management of development and production infrastructure at the same time. We could not easily achieve this with Vagrant so the this tool was written to fill the gap.
 
 You can do the following things with Vortex:
 
 1. Develop your application in a replicable dev environment.
 2. Easily manage your application in the same configuration into a prod environment.
 
-Vortex removes any barriers from the time you start developing your application to the time it is already live and now you need to maintain it. The key principle behind the tool is to keep things simple and predictable.
+Vortex removes any barriers from the time you start developing your application to the time it is already live and you need to maintain it.
 
 # Tool Philosophy
 
@@ -62,7 +62,7 @@ Verbose messages can be obtained by using the `-v|--verbose` flag, which can als
 	vortex -vv 		# enables debug level logging
 	vortex -vvv -c 	# enables silly level logging with colorization
 
-Vortext supports different providers to manage your virtual machines/nodes. Out of the box you have support for VirtualBox (not implemented) and Amazon (fully implemented). VirtualBox is the default provider. Here is an example how to select a provider:
+Vortext supports different providers to manage your virtual machines/nodes. Out of the box you have support for VirtualBox and Amazon. VirtualBox is the default provider. Here is an example how to select a different provider:
 
 	vortex --provider=Amazon boot 	# boots nodes into amazon ec2
 
@@ -72,10 +72,12 @@ The Vortext manifest file is a simple JSON document. By default you are only req
 
 	{
 		...
+		
 		"nodes": {
 			"my-node": {
 			}
 		}
+		
 		...
 	}
 
@@ -83,6 +85,7 @@ This is the simplest possible configuration, which is not useful for anything ju
 
 	{
 		...
+		
 		"amazon": {
 			"accessKeyId": "YOUR ACCESS KEY GOES HERE",
 			"secretAccessKey": "YOUR SECRET KEY GOES HERE",
@@ -100,6 +103,7 @@ This is the simplest possible configuration, which is not useful for anything ju
 				}
 			}
 		}
+		
 		...
 	}
 
@@ -111,6 +115,7 @@ The config file for this will be:
 
 	{
 		...
+		
 		"nodes": {
 			"ubuntu": {
 				"amazon": {
@@ -122,23 +127,139 @@ The config file for this will be:
 				}
 			}
 		}
+		
 		...	
 	}
 
 The same properties can also be provided per-node if this is what you want. Underneath all of this sits the [aws-sdk](http://aws.amazon.com/sdkfornodejs/) for nodejs so all parameters are exactly the same as you will find in the SDK.
 
-VirtualBox is configured in the same way. More information on this will come out soon.
+VirtualBox is configured in the same way. The only difference is that you need to specify VirtualBox specific configuration. For example:
+
+	{
+		...
+		
+		"nodes": {
+			"ubuntu": {
+				"amazon": {
+					"imageId": "ami-2fb3201f",
+					"securityGroups": ["default"],
+					"keyName": "my-key",
+					"privateKey": "path/to/my-key.pem",
+					"username": "ubuntu"
+				},
+				
+				"virtualbox": {
+					"username": "ubuntu",
+					"password": "ubuntu",
+					"vmId": "baseimage",
+					"vmUrl": "http://path/to/baseimage.ova"
+				}
+			}
+		}
+		
+		...	
+	}
+
+If you have a lot of nodes that are similar with minor differences you can move the configuration out of the node structure and specify it globally like such:
+
+	{
+		...
+		
+		"amazon": {
+			"imageId": "ami-2fb3201f",
+			"securityGroups": ["default"],
+			"keyName": "my-key",
+			"privateKey": "path/to/my-key.pem",
+			"username": "ubuntu"
+		},
+		
+		"virtualbox": {
+			"username": "ubuntu",
+			"password": "ubuntu",
+			"vmId": "baseimage",
+			"vmUrl": "http://path/to/baseimage.ova"
+		},
+		
+		...
+		
+		"nodes": {
+			"node1": {
+				"amazon": {
+					"username": "node1"
+				}
+			},
+			"node2": {
+				"amazon": {
+					"username": "node2"
+				}
+			}	
+		}
+		
+		...	
+	}
+
+Last but not least, nodes can be launched in their own namespaces. Namespaces are useful when there are a lot of stuff going around and you just want to logically separate different groups of nodes. Here is an example:
+
+	{
+		...
+		
+		namespace: "my-config",
+		
+		...
+	
+		"amazon": {
+			"imageId": "ami-2fb3201f",
+			"securityGroups": ["default"],
+			"keyName": "my-key",
+			"privateKey": "path/to/my-key.pem",
+			"username": "ubuntu"
+		},
+	
+		"virtualbox": {
+			"username": "ubuntu",
+			"password": "ubuntu",
+			"vmId": "baseimage",
+			"vmUrl": "http://path/to/baseimage.ova"
+		},
+	
+		...
+	
+		"nodes": {
+			"node1": {
+				"amazon": {
+					"username": "node1"
+				}
+			},
+			"node2": {
+				"amazon": {
+					"username": "node2"
+				}
+			}	
+		}
+	
+		...	
+	}
+
+Now `node1` and `node2` will run in the namespace `my-config` and this will not interfare with other nodes that have similar names. Namespaces can be used per node as well so you can get very creative.
+
+# VirtualBox Options
+
+The VirtualBox provider can be configured my supplying a "virtualbox" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
+
+* **vmId** - (string) the id or name of the virtual machine to be used as a base image
+* **vmUrl** - (string) if the vmId is not found the image will be downloaded from a url
+* **username** - (string) username for ssh
+* **password** - (string) password for ssh
+* **privateKey** - (string) path to public ssh key
+* **passphrase** - (string) passphrase for key
 
 # Amazon Options
 
-The Amazon provider can be configured my supplying a "amazon" property at the top level of the manifest file are per-node. The following global options are accepted everywhere:
+The Amazon provider can be configured my supplying a "amazon" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
 
 * **accessKeyId** - (string) your amazon access key id
 * **secretAccessKey** - (string) your amazon access key
 * **region** - (string) the region where you want to deploy
-
-Additionally, the following options can be used per-node only:
-
 * **imageId** - (string) the image id to use
 * **securityGroups** - (array of strings) security groups to apply 
 * **keyName** - (string) keyname to use
@@ -146,8 +267,6 @@ Additionally, the following options can be used per-node only:
 * **password** - (string) password for ssh
 * **privateKey** - (string) path to public ssh key
 * **passphrase** - (string) passphrase for key
-
-You can use a combination of these options to achieve the desired effect.
 
 # Node Provisioning
 
@@ -187,6 +306,8 @@ You can also do the following if this is too much of trouble:
 		...
 	}
 
+As a matter of fact, you can even apply a global roost file for all nodes. Just register the roost configuration outside of the "nodes" property.
+
 For more information how the provisioner works just check the [project page](https://github.com/websecurify/node-roost/).
 
 # Vortex Plugins
@@ -209,7 +330,7 @@ The following workflow takes place when working with plugins.
 
 1. Each plugin is loaded via node's `require`.
 2. The module is inspected for two functions `getVortex` (takes priority) and `vortex`.
-	a. `getVortex` is used to retrieve an object that exposes a `vortex` function, which is useful when you want to manipulate the Vortex environment.
+	a. `getVortex` is used to retrieve an object that exposes a `vortex` function.
 	b. `vortex` is used when you want to execute the plugin at later stage.
 3. Before execution the plugin is invoked via a call to `vortex` function. The following parameters are passed:
 	a. opt - command line options
@@ -224,6 +345,7 @@ Vortex plugin can do pretty much everything so here are some suggestions of what
 * A plugin, which fetches access credentials such as keys, usernames and password from a centralized service.
 * A plugin, which adds another provisioner such as chef and puppet.
 * A plugin, which allows you extensive use of environment variables to configure all aspects of the manifest file.
+* A plugin, which double-checks all options before launching an action in order to prevent unexpected behaviour.
 
 The list goes on and on. Get creative!
 
@@ -235,3 +357,7 @@ Each node can have the following states queried via the Provider.prototype.statu
 * **running** - the node is running and it is available for interaction.
 * **halting** - the node is halting and will soon become unavailable for interaction.
 * **stopped** - the node is stopped.
+
+These states are also exposed when quering a node via the status action, i.e.
+
+	vortex status # shows a state such as booting, running, halthing, stoppped
