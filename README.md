@@ -76,7 +76,7 @@ The Vortext manifest file is a simple JSON document. By default you are only req
 		"nodes": {
 			"my-node": {
 			}
-		}
+		},
 		
 		...
 	}
@@ -102,7 +102,7 @@ This is the simplest possible configuration, which is not useful for anything ju
 					"username": "ubuntu"
 				}
 			}
-		}
+		},
 		
 		...
 	}
@@ -126,7 +126,7 @@ The config file for this will be:
 					"username": "ubuntu"
 				}
 			}
-		}
+		},
 		
 		...	
 	}
@@ -155,7 +155,7 @@ VirtualBox is configured in the same way. The only difference is that you need t
 					"vmUrl": "http://path/to/baseimage.ova"
 				}
 			}
-		}
+		},
 		
 		...	
 	}
@@ -193,7 +193,7 @@ If you have a lot of nodes that are similar with minor differences you can move 
 					"username": "node2"
 				}
 			}	
-		}
+		},
 		
 		...	
 	}
@@ -235,7 +235,7 @@ Last but not least, nodes can be launched in their own namespaces. Namespaces ar
 					"username": "node2"
 				}
 			}	
-		}
+		},
 	
 		...	
 	}
@@ -275,11 +275,13 @@ Vortex comes with a built-in provisioner called [roost](https://github.com/webse
 
 	{
 		...
+		
 		"nodes": {
 			"ubuntu": {
 				"roost": "roost.json"
 			}
-		}
+		},
+		
 		...
 	}
 
@@ -287,6 +289,7 @@ You can also do the following if this is too much of trouble:
 
 	{
 		...
+		
 		"nodes": {
 			"ubuntu": {
 				"roost": {
@@ -303,11 +306,50 @@ You can also do the following if this is too much of trouble:
 					]
 				}
 			}
-		}
+		},
+		
 		...
 	}
 
 As a matter of fact, you can even apply a global roost file for all nodes. Just register the roost configuration outside of the "nodes" property.
+
+Merging roost manifests is also possible when declared at multiple levels. For example, at top level you may want to apply some default and maybe even some updates. Per node you may want to apply generic configurations and have some additional provisioning options for each provider. Such complex setup is possible and here is an example:
+
+	{
+		...
+		
+		"roost": {
+			"apt": {
+				"update": true
+			}
+		}
+		
+		...
+		
+		"nodes": {
+			"ubuntu": {
+				"roost": {
+					"merge": true,
+					
+					"packages": [
+						"nodejs"
+					]
+				},
+				
+				"virtualbox": {
+					"roost": {
+						"merge": true,
+						
+						"commands": [
+							"cd /media/cdrom; ./VBoxLinuxAdditions-x86.run"
+						]
+					}
+				}
+			}
+		},
+		
+		...
+	}
 
 For more information how the provisioner works just check the [project page](https://github.com/websecurify/node-roost/).
 
@@ -319,9 +361,11 @@ In order to load a plugin you need to declare it in your Vortex manifest file. H
 
 	{
 		...
+		
 		"plugins": [
 			"my-plugin"
-		]
+		],
+		
 		...
 	}
 
