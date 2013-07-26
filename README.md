@@ -263,6 +263,7 @@ The Amazon provider can be configured my supplying a "amazon" property at the to
 * **imageId** - (string) the image id to use
 * **securityGroups** - (array of strings) security groups to apply 
 * **keyName** - (string) keyname to use
+* **disableApiTermination** - (string) make the instance un-terminatable
 * **username** - (string) username for ssh
 * **password** - (string) password for ssh
 * **privateKey** - (string) path to public ssh key
