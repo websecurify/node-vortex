@@ -10,6 +10,7 @@ var opt = require('node-getopt')
 	.create([
 		['f', 'file=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
 		['p', 'provider=ARG', 'Specify the default provider.'],
+		['d', 'dry', 'Dry run the provisioner.'],
 		['v', 'verbose+', 'Make it verbose.'],
 		['c', 'colorize', 'Make it pretty.'],
 		['h', 'help', 'Display this help.'],
