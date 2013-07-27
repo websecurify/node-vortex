@@ -355,7 +355,7 @@ Merging roost manifests is also possible when declared at multiple levels. For e
 		...
 	}
 
-The manifest is built from the inner most configuration and merged upwards if the "merge" flags is set to `true`. This is a non-standard roost option.
+The manifest is built from the inner most configuration and merged upwards if the "merge" flag is set to `true`. This is a non-standard roost option.
 
 For more information how the provisioner works just check the [project page](https://github.com/websecurify/node-roost/).
 
