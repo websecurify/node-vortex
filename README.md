@@ -9,7 +9,7 @@
 
 # Introduction
 
-Vortex is a virtual machine management tool. It is similar to [Vagrant](http://vagrantup.com/). The rationale for writing this tool is to enable better management of development and production infrastructure at the same time. We could not easily achieve this with Vagrant so the this tool was written to fill the gap.
+Vortex is a virtual machine management tool. It is similar to [Vagrant](http://vagrantup.com/). The rationale for writing this tool is to enable better management of development and production infrastructure at the same time. We, [Websecurify](http://www.websecurify.com), could not easily achieve this with Vagrant so the this tool was written to fill the gap.
 
 You can do the following things with Vortex:
 
@@ -22,7 +22,7 @@ Vortex removes any barriers from the time you start developing your application 
 
 It is essential to understand the key principle behind Vortex, which is to **always produce a replicable environment**. This sounds nice and simple but it gets deeper than this.
 
-What this means in practice is that virtual machines/nodes are disposable. In other words, they only exist fully provisioned and not in any other way. They also don't maintain any state. Once you halt a node, it is gone with all the data it was keeping within it. If you boot the node again it will launch a brand new instance. This is why there is no state.
+What this means in practice is that virtual machines/nodes are disposable. In other words, they only exist fully provisioned and not in any other way. They also don't maintain any state. Once you halt a node, it is gone for good with all the data it was keeping within it. If you boot the node again it will launch a brand new instance. This is why there is no state.
 
 State is essentially a 3rd-class citizen in Vortex. You provide it only by attaching external storages or by integrating with other services from your application. This sounds like a very extreme way of dealing with things but it does solve a few hard problems like scalability and the application effectiveness against hardware and other types of failure.
 
@@ -62,13 +62,17 @@ Verbose messages can be obtained by using the `-v|--verbose` flag, which can als
 	vortex -vv 		# enables debug level logging
 	vortex -vvv -c 	# enables silly level logging with colorization
 
-Vortext supports different providers to manage your virtual machines/nodes. Out of the box you have support for VirtualBox and Amazon. VirtualBox is the default provider. Here is an example how to select a different provider:
+Vortex supports different providers to manage your virtual machines/nodes. Out of the box you have support for VirtualBox and Amazon. VirtualBox is the default provider. Here is an example how to select a different provider:
 
 	vortex --provider=Amazon boot 	# boots nodes into amazon ec2
 
+The default provisioner, Roost, can also be configured with some command-line options. If you specify the `-d|--dry` flag the provisioner will only output information on what it will do but not perform any actions. This is useful if you are uncertain about the changes you are making to the roost manifests and you just want to check it out before doing it for real. For example:
+
+	vortex --provider=Amazon -d provision my-sensitive-node 	# dry-runs the provisioner
+
 # Vortex Manifest
 
-The Vortext manifest file is a simple JSON document. By default you are only required to specify the nodes you want in your configuration:
+The Vortex manifest file is a simple JSON document. By default you are only required to specify the nodes you want in your configuration:
 
 	{
 		...
@@ -240,22 +244,22 @@ Last but not least, nodes can be launched in their own namespaces. Namespaces ar
 		...	
 	}
 
-Now `node1` and `node2` will run in the namespace `my-config` and this will not interfare with other nodes that have similar names. Namespaces can be used per node as well so you can get very creative.
+Now `node1` and `node2` will run in the namespace `my-config` and this will not interfere with other nodes that have similar names. Namespaces can be used per node as well so you can get very creative.
 
 # VirtualBox Options
 
-The VirtualBox provider can be configured my supplying a "virtualbox" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
+The VirtualBox provider can be configured by supplying a "virtualbox" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
 
 * **vmId** - (string) the id or name of the virtual machine to be used as a base image
 * **vmUrl** - (string) if the vmId is not found the image will be downloaded from a url
-* **username** - (string) username for ssh
+* **username** - (string) username for ssh (defaults to vortex)
 * **password** - (string) password for ssh
 * **privateKey** - (string) path to public ssh key
 * **passphrase** - (string) passphrase for key
 
 # Amazon Options
 
-The Amazon provider can be configured my supplying a "amazon" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
+The Amazon provider can be configured by supplying a "amazon" property at the top level of the manifest file or per-node. The following options are accepted everywhere:
 
 * **accessKeyId** - (string) your amazon access key id
 * **secretAccessKey** - (string) your amazon access key
@@ -264,7 +268,7 @@ The Amazon provider can be configured my supplying a "amazon" property at the to
 * **securityGroups** - (array of strings) security groups to apply 
 * **keyName** - (string) keyname to use
 * **disableApiTermination** - (string) make the instance un-terminatable
-* **username** - (string) username for ssh
+* **username** - (string) username for ssh (defaults to vortex)
 * **password** - (string) password for ssh
 * **privateKey** - (string) path to public ssh key
 * **passphrase** - (string) passphrase for key
@@ -313,7 +317,7 @@ You can also do the following if this is too much of trouble:
 
 As a matter of fact, you can even apply a global roost file for all nodes. Just register the roost configuration outside of the "nodes" property.
 
-Merging roost manifests is also possible when declared at multiple levels. For example, at top level you may want to apply some default and maybe even some updates. Per node you may want to apply generic configurations and have some additional provisioning options for each provider. Such complex setup is possible and here is an example:
+Merging roost manifests is also possible when declared at multiple levels. For example, at top level you may want to apply some defaults and maybe even some updates. Per node you may want to apply generic configurations and have some additional provisioning options for each provider. Such complex setup is possible and here is an example:
 
 	{
 		...
@@ -351,6 +355,8 @@ Merging roost manifests is also possible when declared at multiple levels. For e
 		...
 	}
 
+The manifest is built from the inner most configuration and merged upwards if the "merge" flags is set to `true`. This is a non-standard roost option.
+
 For more information how the provisioner works just check the [project page](https://github.com/websecurify/node-roost/).
 
 # Vortex Plugins
@@ -376,7 +382,7 @@ The following workflow takes place when working with plugins.
 1. Each plugin is loaded via node's `require`.
 2. The module is inspected for two functions `getVortex` (takes priority) and `vortex`.
 	a. `getVortex` is used to retrieve an object that exposes a `vortex` function.
-	b. `vortex` is used when you want to execute the plugin at later stage.
+	b. `vortex` is looked for to check if the plugin is compatible at this stage.
 3. Before execution the plugin is invoked via a call to `vortex` function. The following parameters are passed:
 	a. opt - command line options
 	b. manifest - the manifest file
@@ -385,9 +391,9 @@ The following workflow takes place when working with plugins.
 
 Use `getVortex` to augment the Vortex environment such as install new actions, providers, etc. Use `vortex` to do something, mostly with the manifest file, before the actual action takes place.
 
-Vortex plugin can do pretty much everything so here are some suggestions of what you could do if you spend some time writing a plugin:
+Vortex plugins can do pretty much everything so here are some suggestions of what you could do if you spend some time writing a plugin:
 
-* A plugin, which fetches access credentials such as keys, usernames and password from a centralized service.
+* A plugin, which fetches access credentials such as keys, usernames and password from a centralized storage.
 * A plugin, which adds another provisioner such as chef and puppet.
 * A plugin, which allows you extensive use of environment variables to configure all aspects of the manifest file.
 * A plugin, which double-checks all options before launching an action in order to prevent unexpected behaviour.
@@ -396,7 +402,7 @@ The list goes on and on. Get creative!
 
 # Node States
 
-Each node can have the following states queried via the Provider.prototype.status function:
+Each node can have the following states querying via the Provider.prototype.status function:
 
 * **booting** - the node is currently booting and it is not available for interaction.
 * **running** - the node is running and it is available for interaction.
@@ -405,4 +411,4 @@ Each node can have the following states queried via the Provider.prototype.statu
 
 These states are also exposed when quering a node via the status action, i.e.
 
-	vortex status # shows a state such as booting, running, halthing, stoppped
+	vortex status # shows a state such as booting, running, halting, stopped
