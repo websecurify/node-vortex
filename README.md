@@ -381,13 +381,13 @@ The following workflow takes place when working with plugins.
 
 1. Each plugin is loaded via node's `require`.
 2. The module is inspected for two functions `getVortex` (takes priority) and `vortex`.
-	a. `getVortex` is used to retrieve an object that exposes a `vortex` function.
-	b. `vortex` is looked for to check if the plugin is compatible at this stage.
+  * `getVortex` is used to retrieve an object that exposes a `vortex` function.
+  * `vortex` is looked for to check if the plugin is compatible at this stage.
 3. Before execution the plugin is invoked via a call to `vortex` function. The following parameters are passed:
-	a. opt - command line options
-	b. manifest - the manifest file
-	c. provider - default provider
-	d. action - the action to be executed
+  * opt - command line options
+  * manifest - the manifest file
+  * provider - default provider
+  * action - the action to be executed
 
 Use `getVortex` to augment the Vortex environment such as install new actions, providers, etc. Use `vortex` to do something, mostly with the manifest file, before the actual action takes place.
 
