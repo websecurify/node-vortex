@@ -46,7 +46,7 @@ try {
 } catch (e) {
 	logger.exception(e);
 	
-	console.error(e.message);
+	logger.error(e.message);
 	
 	process.exit(2);
 }
@@ -60,7 +60,7 @@ try {
 } catch (e) {
 	logger.exception(e);
 	
-	console.error(e.message);
+	logger.error(e.message);
 	
 	process.exit(3);
 }
@@ -74,7 +74,7 @@ try {
 } catch (e) {
 	logger.exception(e);
 	
-	console.error(e.message);
+	logger.error(e.message);
 	
 	process.exit(4);
 }
@@ -88,7 +88,7 @@ try {
 } catch (e) {
 	logger.exception(e);
 	
-	console.error(e.message);
+	logger.error(e.message);
 	
 	process.exit(5);
 }
@@ -103,7 +103,7 @@ var callback = function (err) {
 	if (err) {
 		logger.exception(err);
 		
-		console.error(err.message);
+		logger.error(err.message);
 		
 		// NOTE: too late to exit the process at this stage
 	}
@@ -116,7 +116,7 @@ try {
 } catch (e) {
 	logger.exception(e);
 	
-	console.error(e.message);
+	logger.error(e.message);
 	
 	process.exit(6);
 }
