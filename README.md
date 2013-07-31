@@ -202,7 +202,7 @@ If you have a lot of nodes that are similar with minor differences you can move 
 		...	
 	}
 
-Last but not least, nodes can be launched in their own namespaces. Namespaces are useful when there are a lot of stuff going around and you just want to logically separate different groups of nodes. Here is an example:
+Last but not least, nodes can be launched in their own namespaces. Namespaces are useful when there are a lot of stuff going on and you just want to logically separate nodes into different groups (or soft-groups if you prefer). Here is an example:
 
 	{
 		...
