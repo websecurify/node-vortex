@@ -9,7 +9,7 @@ var path = require('path');
 var opt = require('node-getopt')
 	.create([
 		['f', 'file=ARG', 'Specify the root of a vortex project or a vortex manifest.'],
-		['p', 'provider=ARG', 'Specify the default provider.'],
+		['p', 'provider=ARG', 'Specify a default provider.'],
 		['d', 'dry', 'Dry run the provisioner.'],
 		['v', 'verbose+', 'Make it verbose.'],
 		['c', 'colorize', 'Make it pretty.'],
