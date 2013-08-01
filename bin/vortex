@@ -84,7 +84,7 @@ try {
 var vortexProvider;
 
 try {
-	vortexProvider = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : provider.instance('VirtualBox', vortexManifest);
+	vortexProvider = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : providers.instance('VirtualBox', vortexManifest);
 } catch (e) {
 	logger.exception(e);
 	
