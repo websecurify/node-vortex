@@ -13,7 +13,7 @@ var opt = require('node-getopt')
 		['d', 'dry', 'Dry run the provisioner.'],
 		['v', 'verbose+', 'Make it verbose.'],
 		['c', 'colorize', 'Make it pretty.'],
-		['h', 'help', 'Display this help.'],
+		['h', 'help', 'Display this help.']
 	])
 	.bindHelp()
 	.parseSystem();
@@ -84,7 +84,11 @@ try {
 var vortexProvider;
 
 try {
-	vortexProvider = opt.options.provider ? providers.instance(opt.options.provider, vortexManifest) : providers.instance('VirtualBox', vortexManifest);
+	if (opt.options.provider) {
+		vortexProvider = providers.instance(opt.options.provider, vortexManifest);
+	} else {
+		vortexProvider = providers.instance('VirtualBox', vortexManifest);
+	}
 } catch (e) {
 	logger.exception(e);
 	
