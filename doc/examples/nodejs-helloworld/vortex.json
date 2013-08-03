@@ -1,0 +1,38 @@
+{
+	"namespace": "vortex-examples",
+	
+	"virtualbox": {
+		"vmId": "baseimage",
+		"username": "vortex",
+		"password": "vortex"
+	},
+	
+	"nodes": {
+		"app": {
+			"expose": {
+				".": "/app"
+			},
+			
+			"roost": {
+				"apt": {
+					"repositories": [
+						"ppa:chris-lea/node.js"
+					],
+					
+					"update": "true"
+				},
+				
+				"packages": [
+					"nodejs"
+				],
+				
+				"commands": [
+					"sudo npm install express -g",
+					"sudo npm install forever -g",
+					"sudo forever stopall; true",
+					"sudo NODE_PATH=/usr/lib/nodejs:/usr/lib/node_modules:/usr/share/javascript forever start /app/app.js"
+				]
+			}
+		}
+	}
+}
