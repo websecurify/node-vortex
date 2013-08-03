@@ -1,0 +1,1 @@
+This example demonstrates how to configure and run a nodejs application. The same setup can be deployed in other providers besides VirtualBox. To use Amazon you will have to provide additionl configuration.
