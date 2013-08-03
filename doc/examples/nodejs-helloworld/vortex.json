@@ -2,7 +2,8 @@
 	"namespace": "vortex-examples",
 	
 	"virtualbox": {
-		"vmId": "baseimage",
+		"vmId": "precise64",
+		"vmUrl": "https://s3.amazonaws.com/node-vortex/precise64.ova",
 		"username": "vortex",
 		"password": "vortex"
 	},
