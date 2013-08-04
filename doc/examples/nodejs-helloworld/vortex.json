@@ -1,5 +1,5 @@
 {
-	"namespace": "vortex-examples",
+	"namespace": "nodejs-helloworld",
 	
 	"virtualbox": {
 		"vmId": "precise64",
