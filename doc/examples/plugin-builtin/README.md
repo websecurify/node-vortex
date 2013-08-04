@@ -2,7 +2,7 @@ This example demonstrates how you can add your own plugin in Vortex. The plugin 
 
 To run the example simply execute the following from your shell:
 
-	cd path/to/vortex/git/doc/examples/builtin-plugin
+	cd path/to/vortex/git/doc/examples/plugin-builtin
 	vortex boot
 	vortex provision
 

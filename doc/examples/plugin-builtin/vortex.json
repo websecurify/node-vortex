@@ -1,5 +1,5 @@
 {
-	"namespace": "builtin-plugin",
+	"namespace": "plugin-builtin",
 	
 	"plugins": [
 		"./defaults.js"
