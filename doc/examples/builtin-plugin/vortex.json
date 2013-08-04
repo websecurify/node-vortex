@@ -1,0 +1,12 @@
+{
+	"namespace": "builtin-plugin",
+	
+	"plugins": [
+		"./defaults.js"
+	],
+	
+	"nodes": {
+		"app": {
+		}
+	}
+}
