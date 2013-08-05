@@ -1,0 +1,28 @@
+{
+	"namespace": "mongodb-helloworld",
+	
+	"virtualbox": {
+		"vmId": "precise64",
+		"vmUrl": "https://s3.amazonaws.com/node-vortex/precise64.ova",
+		"username": "vortex",
+		"password": "vortex"
+	},
+	
+	"roost": {
+		"plugins": [
+			"roost-mongodb"
+		]
+	},
+	
+	"nodes": {
+		"db": {
+			"roost": {
+				"merge": true,
+				
+				"mongodb": {
+					"install": true
+				}
+			}
+		}
+	}
+}

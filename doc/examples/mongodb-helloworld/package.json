@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"roost-mongodb": "latest"
+	}
+}
