@@ -1,6 +1,6 @@
 {
 	"name": "vortex",
-	"version": "0.9.9",
+	"version": "0.9.10",
 	"author": "Websecurify <contact@websecurify.com>",
 	"description": "Virtual machine management toolkit.",
 	"license": "MIT",
@@ -17,7 +17,7 @@
 		"virtualbox"
 	],
 	
-	"main": "index.js",
+	"main": "./lib/index.js",
 	
 	"bin": {
 		"vortex": "./bin/vortex"
