@@ -85,7 +85,7 @@ The Vortex manifest file is a simple JSON document. By default you are only requ
 		...
 	}
 
-This is the simplest possible configuration, which is not useful for anything just yet. To make this configuration useful for booting an image in Amazon you need to supply addition information. This is how it is done:
+This is the simplest possible configuration, which is not useful for anything just yet. To make this configuration useful for booting an image in Amazon you need to supply additional information. This is how it is done:
 
 	{
 		...
