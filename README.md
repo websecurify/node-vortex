@@ -47,6 +47,11 @@ Here are a few examples of how to use Vortex via your shell:
 	vortex halt 		# halts all nodes
 	vortex provision 	# provision all nodes
 
+The following additional helper actions are also available:
+
+	vortex up 			# boots and provisions a node
+	vortex down 		# halts a node
+
 You can also specify which node you want to manipulate:
 
 	vortex shell my-node-name 	# starts interactive session on the selected node
