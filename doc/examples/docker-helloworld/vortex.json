@@ -1,0 +1,24 @@
+{
+	"namespace": "docker-helloworld",
+	
+	"virtualbox": {
+		"vmId": "precise64-docker",
+		"vmUrl": "https://s3.amazonaws.com/node-vortex/precise64-docker.ova",
+		"username": "vortex",
+		"password": "vortex"
+	},
+	
+	"nodes": {
+		"docker": {
+			"roost": {
+				"apt": {
+					"update": true
+				},
+				
+				"packages": [
+					"lxc-docker"
+				]
+			}
+		}
+	}
+}
