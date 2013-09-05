@@ -1,6 +1,6 @@
 {
 	"name": "vortex",
-	"version": "0.9.19",
+	"version": "0.9.20",
 	"author": "Websecurify <contact@websecurify.com>",
 	"description": "Virtual machine management toolkit.",
 	"license": "MIT",
@@ -34,7 +34,7 @@
 		"progress2": "0.1.1",
 		"aws-sdk": "1.4.0",
 		"async": "0.2.9",
-		"vboxmanage": "0.0.11",
+		"vboxmanage": "0.0.12",
 		"logsmith": "0.0.2",
 		"roost": "0.6.14"
 	}
