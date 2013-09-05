@@ -1,3 +1,4 @@
+`
 var path = require('path');
 var async = require('async');
 var awsSdk = require('aws-sdk');
@@ -748,3 +749,4 @@ Provider.prototype.shellSpec = function (nodeName, callback) {
 // ---
 
 exports.Provider = Provider;
+`

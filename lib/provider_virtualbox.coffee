@@ -1,4 +1,4 @@
-var fs = require('fs');
+`var fs = require('fs');
 var url = require('url');
 var path = require('path');
 var roost = require('roost');
@@ -769,3 +769,4 @@ Provider.prototype.shellSpec = function (nodeName, callback) {
 // ---
 
 exports.Provider = Provider;
+`
