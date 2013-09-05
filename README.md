@@ -3,9 +3,9 @@
 	/ )( \ /  \(  _ \(_  _)(  __)( \/ )
 	\ \/ /(  O ))   /  )(   ) _)  )  ( 
 	 \__/  \__/(__\_) (__) (____)(_/\_)
-	 
-	 by Websecurify
-	 
+	
+	by Websecurify
+	
 
 # Introduction
 
