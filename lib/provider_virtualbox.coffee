@@ -5,10 +5,10 @@ logsmith = require 'logsmith'
 path_extra = require 'path-extra'
 vboxmanage = require 'vboxmanage'
 portchecker = require 'portchecker'
+shell_quote = require 'shell-quote'
 
 # ---
 
-shell = require './shell'
 download = require './download'
 
 # ---
@@ -142,12 +142,13 @@ exports.Provider = class
 		Provider-specific method for bootstrapping a node.
 		###
 		commands = [
+			'sudo mkdir -p /etc/vortex/flags/'
+			'sudo chmod a+rx /etc/vortex/flags/'
+			
 			'[ ! -f /etc/vortex/flags/network_ready ] && sudo ifconfig eth1 0.0.0.0 0.0.0.0'
 			'[ ! -f /etc/vortex/flags/network_ready ] && sudo ifconfig eth2 0.0.0.0 0.0.0.0'
 			'[ ! -f /etc/vortex/flags/network_ready ] && sudo dhclient -r eth1 eth2'
 			'[ ! -f /etc/vortex/flags/network_ready ] && sudo dhclient eth1 eth2'
-			'[ ! -f /etc/vortex/flags/network_ready ] && sudo mkdir -p /etc/vortex/flags/'
-			'[ ! -f /etc/vortex/flags/network_ready ] && sudo chmod a+rx /etc/vortex/flags/'
 			'[ ! -f /etc/vortex/flags/network_ready ] && sudo touch /etc/vortex/flags/network_ready'
 		]
 		
@@ -172,11 +173,9 @@ exports.Provider = class
 					
 					if stats.isDirectory()
 						share_handle = @get_share_handle exposure.dst
-						q_dest = shell.quote exposure.dst
-						q_share_handle = shell.quote share_handle
 						
-						commands.push "sudo mkdir -p #{q_dest}"
-						commands.push "sudo mount.vboxsf #{q_share_handle} #{q_dest} -o rw"
+						commands.push shell_quote.quote ['sudo', 'mkdir', '-p', exposure.dst]
+						commands.push shell_quote.quote ['sudo', 'mount.vboxsf', share_handle, exposure.dst, '-o', 'rw']
 						
 						return callback null
 					else
