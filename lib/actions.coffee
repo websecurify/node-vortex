@@ -201,6 +201,14 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 			), null)
 			
 	#
+	# Call provider's bootstrap method first.
+	#
+	actions.push (node_name, callback) ->
+		provider.bootstrap node_name, (err) ->
+			return callback err if err
+			return callback null, node_name
+			
+	#
 	# Setup some defaults. 
 	#
 	actions.push (node_name, callback) ->
@@ -228,14 +236,6 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 		
 		return callback null, node_name, roost_manifest, roost_plugins
 		
-	#
-	# Call provider's bootstrap method first.
-	#
-	actions.push (node_name, roost_manifest, roost_plugins, callback) ->
-		provider.bootstrap node_name, (err) ->
-			return callback err if err
-			return callback null, node_name, roost_manifest, roost_plugins
-			
 	#
 	# Obtain shell spec.
 	#
