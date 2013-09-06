@@ -21,7 +21,7 @@ exports.get = (url, file, callback) ->
 	try
 		socket = getter.get url, (response) ->
 			switch
-				when response.statusCode == 401 then return callback new Error "not authorised to download #{url}" if callback
+				when response.statusCode == 401 then return callback new Error "not authorized to download #{url}" if callback
 				when response.statusCode == 403 then return callback new Error "not allowed to download #{url}" if callback
 				when response.statusCode == 404 then return callback new Error "download #{url} not found" if callback
 				when 200 < response.statusCode > 299 then return callback new Error "cannot download #{url}" if callback
