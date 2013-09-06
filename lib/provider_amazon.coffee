@@ -634,7 +634,7 @@ Provider.prototype.halt = function (nodeName, callback) {
 	);
 };
 
-Provider.prototype.shellSpec = function (nodeName, callback) {
+Provider.prototype.shell_spec = function (nodeName, callback) {
 	var self = this;
 	
 	var configureSpec = function (node, callback) {
