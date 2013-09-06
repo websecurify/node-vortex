@@ -57,6 +57,10 @@ You can also specify which node you want to manipulate:
 	vortex shell my-node-name 	# starts interactive session on the selected node
 	vortex halt my-node-name 	# halts the selected node
 
+To get the complete list of actions just use `actions`
+
+	vortex actions 	# get complete list of actions
+
 By the default Vortex reads the configuration from `vortex.json` located inside the current working directory. However, you can specify an alternative location with the `-f|--file` option. For example:
 
 	vortex -f path/to/folder 		# loads path/to/folder/vortex.json manifest
@@ -74,6 +78,12 @@ Vortex supports different providers to manage your virtual machines/nodes. Out o
 The default provisioner, Roost, can also be configured with some command-line options. If you specify the `-d|--dry` flag the provisioner will only output information on what it will do but not perform any actions. This is useful if you are uncertain about the changes you are making to the roost manifests and you just want to check it out before doing it for real. For example:
 
 	vortex --provider=Amazon -d provision my-sensitive-node 	# dry-runs the provisioner
+
+Here is another fun bit you can do. The shell action also accepts parameters which will be directly executed as commands. For example:
+
+	vortex shell -- -- ls -la 	# will list the home folder
+
+You can apply commands to all nodes or the one you have specifically selected.
 
 # Vortex Manifest
 
@@ -294,7 +304,7 @@ Vortex comes with a built-in provisioner called [roost](https://github.com/webse
 		...
 	}
 
-You can also do the following if this is too much of trouble:
+You can also do the following if this is too much of a trouble:
 
 	{
 		...
@@ -320,7 +330,7 @@ You can also do the following if this is too much of trouble:
 		...
 	}
 
-As a matter of fact, you can even apply a global roost file for all nodes. Just register the roost configuration outside of the "nodes" property.
+As a matter of fact, you can even apply a global roost file for all nodes. Just register the roost configuration outside of the `nodes` property.
 
 Merging roost manifests is also possible when declared at multiple levels. For example, at top level you may want to apply some defaults and maybe even some updates. Per node you may want to apply generic configurations and have some additional provisioning options for each provider. Such complex setup is possible and here is an example:
 
@@ -360,7 +370,7 @@ Merging roost manifests is also possible when declared at multiple levels. For e
 		...
 	}
 
-The manifest is built from the inner most configuration and merged upwards if the "merge" flag is set to `true`. This is a non-standard roost option.
+The manifest is built from the inner most configuration and merged upwards if the `merge` flag is set to `true`. This is a non-standard roost option.
 
 For more information how the provisioner works just check the [project page](https://github.com/websecurify/node-roost/).
 
