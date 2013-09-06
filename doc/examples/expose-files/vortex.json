@@ -1,0 +1,25 @@
+{
+	"namespace": "expose-files",
+	
+	"virtualbox": {
+		"vmId": "precise64",
+		"vmUrl": "https://s3.amazonaws.com/node-vortex/precise64.ova",
+		"username": "vortex",
+		"password": "vortex"
+	},
+	
+	"nodes": {
+		"app": {
+			"expose": {
+				".": "/files"
+			},
+			
+			"roost": {
+				"commands": [
+					"ls -la /files",
+					"cat /files/document.txt"
+				]
+			}
+		}
+	}
+}
