@@ -488,10 +488,20 @@ exports.Provider = class
 			parts.push ':' + encodeURIComponent password if password
 			parts.push '@'
 			parts.push address
+			parts.push ':' + ssh_port
 			parts.push ';privateKey=' + encodeURIComponent private_key if private_key
 			parts.push ';passphrase=' + encodeURIComponent passphrase if passphrase
 			
-			return callback null, parts.join ''
+			spec = parts.join ''
+			spec_options =
+				username: username
+				password: password
+				host: address
+				port: ssh_port
+				privateKey: private_key
+				passphrase: passphrase
+				
+			return callback null, spec, spec_options
 			
 		#
 		# Action on the tasks.
