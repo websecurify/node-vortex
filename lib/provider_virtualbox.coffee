@@ -155,7 +155,16 @@ exports.Provider = class
 		node_handle = @get_node_handle node_name
 		
 		#
-		# First we check the exposed files and folders.
+		# First we verify the status of the node to check if the state is correct.
+		#
+		verify_status = (callback) =>
+			@status node_name, (err, state, address) ->
+				return callback err if err
+				return callback new Error "node #{node_name} is not ready" if state != 'running'
+				return callback null
+				
+		#
+		# Next we check the exposed files and folders.
 		#
 		prepare_exposed = (callback) =>
 			try
@@ -200,7 +209,7 @@ exports.Provider = class
 		#
 		# Action on the task.
 		#
-		async.waterfall [prepare_exposed, run_commands], (err, state, address) ->
+		async.waterfall [verify_status, prepare_exposed, run_commands], (err, state, address) ->
 			return callback err if err
 			return callback null
 			
