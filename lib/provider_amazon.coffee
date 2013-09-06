@@ -14,12 +14,14 @@ exports.Provider = class
 		###
 		The provider accepts a manifest as a parameter by specification.
 		###
+		
 		aws_sdk.config.update @extract_client_options()
 		
 	get_node: (node_name) ->
 		###
 		This method returns a node by looking up its name. It throws an error if the node is not found.
 		###
+		
 		return @manifest.nodes[node_name] if @manifest.nodes? and @manifest.nodes[node_name]?
 		throw new Error "node #{node_name} does not exist"
 		
@@ -27,6 +29,7 @@ exports.Provider = class
 		###
 		Extracts a namespace by looking it up in the node itself and upper layers of the manifest
 		###
+		
 		try
 			node = @get_node node_name
 		catch
@@ -36,6 +39,10 @@ exports.Provider = class
 		return @manifest.namespace if @manifest.namespace?
 		
 	extract_client_options: (node_name) ->
+		###
+		Extracts options related to the AWS client.
+		###
+		
 		access_key_id = @extract_access_key_id node_name
 		secret_access_key = @extract_secret_access_key node_name
 		region = @extract_region node_name
@@ -50,6 +57,10 @@ exports.Provider = class
 		return options
 		
 	extract_instance_options: (node_name) ->
+		###
+		Extracts options related to AWS instances.
+		###
+		
 		image_id = this.extract_image_id node_name
 		instance_type = this.extract_instance_type node_name
 		key_name = this.extract_key_name node_name
@@ -71,12 +82,14 @@ exports.Provider = class
 		###
 		Obtain a client to EC2
 		###
+		
 		return new aws_sdk.EC2 @extract_client_options node_name
 		
 	extract_property: (property_name, node_name) ->
 		###
 		Extracts a property by looking into a node and upper layers of the manifest.
 		###
+		
 		try
 			node = @get_node node_name
 		catch e
@@ -153,6 +166,7 @@ exports.Provider = class
 		###
 		Provider-specific method for bootstrapping a node.
 		###
+		
 		@status node_name, (err, state, address) ->
 			return callback err if err
 			return callback new Error "node #{node_name} is not ready" if state != 'running'
