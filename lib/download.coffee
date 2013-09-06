@@ -7,6 +7,10 @@ Progress2 = require 'progress2'
 # ---
 
 exports.get = (url, file, callback) ->
+	###
+	Downloads a url into a file. A progresbar will appear If the right logging level is set.
+	###
+	
 	logsmith.verbose "download #{url} to #{file}"
 	
 	switch

@@ -3,6 +3,10 @@ path = require 'path'
 # ---
 
 exports.obtain = (manifest) ->
+	###
+	Obtains a list of plugins specified in the manifest.
+	###
+	
 	return if not manifest.plugins?
 	
 	true_values = [1, '1', true, 'true']

@@ -4,7 +4,7 @@ roost = require 'roost'
 
 exports.Ssh = class extends roost.target_ssh.Target
 	###
-	This is a simple helper class for launching shells.
+	This is a helper class for launching shells.
 	###
 	
 	shell: () ->

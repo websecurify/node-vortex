@@ -3,6 +3,10 @@ actions = require './actions'
 # ---
 
 exports.launch = (opt, manifest, plugins, provider, action, callback) ->
+	###
+	Main method for putting toghether the entire logic of Vortex.
+	###
+	
 	return callback new Error "action #{action} is not recognized" if not actions[action]?
 	
 	[plugin.vortex opt, manifest, provider, action for plugin in plugins] if plugins

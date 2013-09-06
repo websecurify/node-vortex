@@ -1,6 +1,6 @@
 exports.main = (argv=process.argv.slice(2)) ->
 	###
-	Main into Vortex. Command options can be passed as an array into args.
+	Launches Vortex command line tool. It can be used for embedding.
 	###
 	
 	logsmith = require 'logsmith'
