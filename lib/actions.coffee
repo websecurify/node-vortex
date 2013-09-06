@@ -123,6 +123,7 @@ exports.restart = (opt, manifest, provider, node_names, callback) ->
 	###
 	This action chains actions halt and then boot for every node.
 	###
+	
 	actions = []
 	
 	#
@@ -159,6 +160,7 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 	###
 	This action start the provisioner on the selected nodes.
 	###
+	
 	actions = []
 	
 	#
@@ -363,6 +365,7 @@ exports.reload = (opt, manifest, provider, node_names, callback) ->
 	###
 	This action chains actions down and then up for every node.
 	###
+	
 	actions = []
 	
 	#
@@ -399,6 +402,7 @@ exports.shell =  (opt, manifest, provider, node_names, callback) ->
 	###
 	This action start a shell or executes a command on nodes.
 	###
+	
 	actions = []
 	
 	#
