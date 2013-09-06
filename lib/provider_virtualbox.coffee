@@ -223,7 +223,7 @@ exports.Provider = class
 			
 	status: (node_name, callback) ->
 		###
-		Provider-specific method for checking the status a node.
+		Provider-specific method for checking the status of a node.
 		###
 		
 		node_handle = @get_node_handle node_name
