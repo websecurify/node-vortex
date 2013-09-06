@@ -1,6 +1,6 @@
 {
 	"name": "vortex",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"author": "Websecurify <contact@websecurify.com>",
 	"description": "Virtual machine management toolkit.",
 	"license": "MIT",
