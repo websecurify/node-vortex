@@ -168,11 +168,45 @@ exports.Provider = class
 		###
 		
 		#
-		# Doesn't do anything at this stage.
+		# First we verify the status of the node to check if the state is correct.
 		#
-		@status node_name, (err, state, address) ->
+		verify_status = (callback) =>
+			@status node_name, (err, state, address) ->
+				return callback err if err
+				return callback new Error "node #{node_name} is not ready" if state != 'running'
+				return callback null
+				
+		#
+		# Next we check the exposed files and folders.
+		#
+		prepare_exposed = (callback) =>
+			try
+				node = @get_node node_name
+			catch e
+				node = null
+				
+			return callback null if not node?.expose?
+			
+			handle_exposure = (exposure, callback) =>
+				source_path = path_extra.resolve path_extra.dirname(@manifest.meta.location), exposure.src
+				
+				fs.stat source_path, (err, stats) =>
+					return callback new Error "cannot expose #{exposure.src} because it does not exist" if err
+					
+					if stats.isDirectory()
+						# TODO: add code here
+						return callback null
+					else
+						# TODO: add code here
+						return callback null
+						
+			async.eachSeries ({src: src, dst: dst} for src, dst of node.expose), handle_exposure, callback
+			
+		#
+		# Action on the tasks.
+		#
+		async.waterfall [verify_status, prepare_exposed], (err, state, address) ->
 			return callback err if err
-			return callback new Error "node #{node_name} is not ready" if state != 'running'
 			return callback null
 			
 	status: (node_name, callback) ->
