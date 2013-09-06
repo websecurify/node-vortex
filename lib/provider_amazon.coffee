@@ -25,6 +25,42 @@ exports.Provider = class
 		return @manifest.nodes[node_name] if @manifest.nodes? and @manifest.nodes[node_name]?
 		throw new Error "node #{node_name} does not exist"
 		
+	extract_property: (property_name, node_name) ->
+		###
+		Extracts a property by looking into a node and upper layers of the manifest.
+		###
+		
+		try
+			node = @get_node node_name
+		catch e
+			node = null
+			
+		return node.amazon[property_name] if node?.amazon?[property_name]?
+		return @manifest.amazon[property_name] if @manifest.amazon?[property_name]?
+		return null
+		
+	#
+	# Helper functions for extracting various properties.
+	#
+	extract_access_key_id: (node_name) -> @extract_property 'accessKeyId', node_name
+	extract_secret_access_key: (node_name) -> @extract_property 'secretAccessKey', node_name
+	extract_region: (node_name) -> @extract_property 'region', node_name
+	extract_max_retries: (node_name) -> @extract_property 'maxRetries', node_name
+	extract_image_id: (node_name) -> @extract_property 'imageId', node_name
+	extract_instance_type: (node_name) -> @extract_property 'instanceType', node_name
+	extract_key_name: (node_name) -> @extract_property 'keyName', node_name
+	extract_security_groups: (node_name) -> @extract_property 'securityGroups', node_name
+	extract_user_data: (node_name) -> @extract_property 'userData', node_name
+	extract_disable_api_termination: (node_name) -> @extract_property 'disableApiTermination', node_name
+	extract_username: (node_name) -> @extract_property 'username', node_name
+	extract_password: (node_name) -> @extract_property 'password', node_name
+	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
+	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
+	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
+	#
+	#
+	#
+	
 	extract_namespace: (node_name) ->
 		###
 		Extracts a namespace by looking it up in the node itself and upper layers of the manifest
@@ -80,50 +116,14 @@ exports.Provider = class
 		
 	get_client: (node_name) ->
 		###
-		Obtain a client to EC2
+		Obtain a client for EC2.
 		###
 		
 		return new aws_sdk.EC2 @extract_client_options node_name
 		
-	extract_property: (property_name, node_name) ->
-		###
-		Extracts a property by looking into a node and upper layers of the manifest.
-		###
-		
-		try
-			node = @get_node node_name
-		catch e
-			node = null
-			
-		return node.amazon[property_name] if node?.amazon?[property_name]?
-		return @manifest.amazon[property_name] if @manifest.amazon?[property_name]?
-		return null
-		
-	#
-	# Helper functions for extracting various properties.
-	#
-	extract_access_key_id: (node_name) -> @extract_property 'accessKeyId', node_name
-	extract_secret_access_key: (node_name) -> @extract_property 'secretAccessKey', node_name
-	extract_region: (node_name) -> @extract_property 'region', node_name
-	extract_max_retries: (node_name) -> @extract_property 'maxRetries', node_name
-	extract_image_id: (node_name) -> @extract_property 'imageId', node_name
-	extract_instance_type: (node_name) -> @extract_property 'instanceType', node_name
-	extract_key_name: (node_name) -> @extract_property 'keyName', node_name
-	extract_security_groups: (node_name) -> @extract_property 'securityGroups', node_name
-	extract_user_data: (node_name) -> @extract_property 'userData', node_name
-	extract_disable_api_termination: (node_name) -> @extract_property 'disableApiTermination', node_name
-	extract_username: (node_name) -> @extract_property 'username', node_name
-	extract_password: (node_name) -> @extract_property 'password', node_name
-	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
-	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
-	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
-	#
-	#
-	#
-	
 	create_error: (error, node_name) ->
 		###
-		Creates a friendlier error message
+		Creates a friendlier error message.
 		###
 		
 		if error.code == 'NetworkingError'
@@ -136,10 +136,10 @@ exports.Provider = class
 			message = parts.shift().toLowerCase().trim()
 		
 			if node_name
-				message = message + ' for node ' + helpers.q(node_name)
+				message = "#{message} for node #{node_name}"
 				
 			if parts.length > 0
-				message = message + ' (' + parts.join('.').trim() + ')'
+				message = "#{message} (#{parts.join('.').trim()})"
 				
 			message = message.replace /\s'(\w+)'\s/, (match, group) ->
 				param = group.toLowerCase()
@@ -158,7 +158,7 @@ exports.Provider = class
 					
 				return ' "' + param + '" '
 				
-			message = helpers.camel message
+			message = message[0] + message.substring 1, message.length
 			
 			return new Error message
 			
@@ -167,6 +167,9 @@ exports.Provider = class
 		Provider-specific method for bootstrapping a node.
 		###
 		
+		#
+		# Doesn't do anything at this stage.
+		#
 		@status node_name, (err, state, address) ->
 			return callback err if err
 			return callback new Error "node #{node_name} is not ready" if state != 'running'
@@ -174,7 +177,7 @@ exports.Provider = class
 			
 	status: (node_name, callback) ->
 		###
-		Provider-specific method for checking the status a node.
+		Provider-specific method for checking the status of a node.
 		###
 		
 		try
@@ -197,11 +200,11 @@ exports.Provider = class
 			
 			for reservation in result.Reservations
 				for instance in reservation.Instances
-					instances.push({
+					instances.push {
 						id: instance.InstanceId
 						state: instance.State.Name
 						address: instance.PublicDnsName
-					})
+					}
 					
 			return callback null, 'stopped' if instances.length == 0
 			
@@ -213,26 +216,18 @@ exports.Provider = class
 			
 			logsmith.debug 'selected instance', selected_instance
 			
-			instances
-				.filter(((instance) ->
-					return [
-						'shutting-down'
-						'terminated'
-						'stopping'
-						'stopped'
-					].indexOf(instance.state) < 0 and selected_instance != instance
-				))
-				.forEach(((instance) ->
+			for instance in instances
+				if instance.state not in ['shutting-down', 'terminated', 'stopping', 'stopped'] and selected_instance != instance
 					logsmith.warn "duplicate node #{node_name} with instance id #{instance.id} detected"
-				))
-				
-			switch selected_instance.state
-				when 'pending' then state = 'booting'
-				when 'running' then state = 'running'
-				when 'stopped' then state = 'stopped'
-				when 'stopping' then state = 'halting'
-				when 'terminated' then state = 'stopped'
-				when 'shutting-down' then state = 'halting'
+					
+			state = switch selected_instance.state
+				when 'pending' then 'booting'
+				when 'running' then 'running'
+				when 'stopped' then 'stopped'
+				when 'stopping' then 'halting'
+				when 'terminated' then 'stopped'
+				when 'shutting-down' then 'halting'
+				else null
 				
 			return callback new Error "undefined state for node #{node_name}" if not state
 			
@@ -300,14 +295,10 @@ exports.Provider = class
 				
 				logsmith.debug 'selected instance', selected_instance
 				
-				instances
-					.filter(((instance) ->
-						selected_instance != instance
-					))
-					.forEach(((instance) ->
+				for instance in instances
+					if selected_instance != instance
 						logsmith.warn "duplicate node #{node_name} with instance id #{instance_id} detected"
-					))
-					
+						
 				return callback null, selected_instance.id
 				
 		#
