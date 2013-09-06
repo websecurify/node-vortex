@@ -11,9 +11,21 @@ shell = require './shell'
 
 # ---
 
+exports.actions = (opt, manifest, provider, node_name, callback) ->
+	###
+	Prints out the available actions.
+	###
+	
+	for action_name, action_fn of exports
+		desc = action_fn.toString().split('\n').slice(2, 3)[0]?.trim()
+		
+		logsmith.info action_name, '-', desc
+		
+# ---
+
 exports.status = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action obtains the status of nodes.
+	Obtains state and network address if the selected node is running.
 	###
 	
 	#
@@ -41,13 +53,15 @@ exports.status = (opt, manifest, provider, node_names, callback) ->
 
 exports.shellspec = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action obtains the shell spec of nodes.
+	Obtains the shell specification (typically ssh url) for the selected node.
 	###
 	
 	#
 	# Call provier's shell_spec for each node.
 	#
 	process_node = (node_name, callback) ->
+		logsmith.verbose "query shell spec for node #{node_name}"
+		
 		provider.shell_spec node_name, (err, spec) ->
 			return callback err if err
 			
@@ -61,7 +75,7 @@ exports.shellspec = (opt, manifest, provider, node_names, callback) ->
 
 exports.boot = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action boots nodes.
+	Ensures that the node is running.
 	###
 	
 	#
@@ -91,7 +105,7 @@ exports.boot = (opt, manifest, provider, node_names, callback) ->
 
 exports.halt = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action halts nodes.
+	Ensures that the node is stopped.
 	###
 	
 	#
@@ -121,7 +135,7 @@ exports.halt = (opt, manifest, provider, node_names, callback) ->
 
 exports.restart = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action chains actions halt and then boot for every node.
+	Chains actions halt and then boot for every node.
 	###
 	
 	actions = []
@@ -158,7 +172,7 @@ exports.restart = (opt, manifest, provider, node_names, callback) ->
 
 exports.provision = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action start the provisioner on the selected nodes.
+	Starts the provisioner on the selected node.
 	###
 	
 	actions = []
@@ -169,12 +183,12 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 	merge_objects = (a, b) ->
 		for key, value of b
 			if a[key]?
-				switch
-					when typeof(a[key]) == 'boolean' || a[key] instanceof Boolean then a[key] = b[key]
-					when typeof(a[key]) == 'number' || a[key] instanceof Number then a[key] = b[key]
-					when typeof(a[key]) == 'string' || a[key] instanceof String then a[key] = b[key]
-					when Array.isArray(a[key]) then a[key] = a[key].concat b[key]
-					else a[key] = arguments.callee a[key], b[key]
+				a[key] = switch
+					when Array.isArray a[key] then a[key].concat b[key]
+					when typeof a[key] == 'number' or a[key] instanceof Number then b[key]
+					when typeof a[key] == 'string' or a[key] instanceof String then b[key]
+					when typeof a[key] == 'boolean' or a[key] instanceof Boolean then b[key]
+					else arguments.callee a[key], b[key]
 			else
 				a[key] = b[key]
 				
@@ -193,13 +207,13 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 				else
 					return config
 			))
-			.reduce(((previousValue, currentValue, index, array) ->
-				return JSON.parse JSON.stringify(currentValue) if not previousValue
+			.reduce(((previous_value, current_value) ->
+				return JSON.parse JSON.stringify(current_value) if not previous_value
 				
-				if currentValue.merge? and currentValue.merge
-					return merge_objects previousValue, currentValue
+				if current_value.merge? and current_value.merge
+					return merge_objects previous_value, current_value
 				else
-					return currentValue
+					return current_value
 			), null)
 			
 	#
@@ -211,7 +225,7 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 			return callback null, node_name
 			
 	#
-	# Setup some defaults. 
+	# Start configuring roost.
 	#
 	actions.push (node_name, callback) ->
 		node_manifest = manifest.nodes[node_name]
@@ -262,18 +276,17 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 			return callback err if err
 			
 			for result in results
-				if result.node_name == node_name
-					continue
-					
+				continue if result.node_name == node_name
+				
 				if not result.address
 					logsmith.error "node #{node_name} does not expose address"
 					
 					continue
 					
-				a = shell_quote.quote([result.address])
-				f = shell_quote.quote(["/etc/vortex/nodes/#{result.node_name}"])
+				address = shell_quote.quote([result.address])
+				file = shell_quote.quote(["/etc/vortex/nodes/#{result.node_name}"])
 				
-				roost_manifest.bootstrap.unshift "echo #{a} | sudo tee #{f}"
+				roost_manifest.bootstrap.unshift "echo #{address} | sudo tee #{file}"
 				
 			return callback null, node_name, roost_manifest, roost_plugins, spec
 			
@@ -307,7 +320,7 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 
 exports.up = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action will bring up a node by first booting it and than starting the provisioning process.
+	Will bring up a node by first booting it and than starting the provisioning process.
 	###
 	
 	#
@@ -344,7 +357,7 @@ exports.up = (opt, manifest, provider, node_names, callback) ->
 
 exports.down = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action will bring down a node. This is esentially a wrapper around the halt action.
+	Will bring down a node. At the moment this action is a alias for action halt.
 	###
 	
 	#
@@ -363,7 +376,7 @@ exports.down = (opt, manifest, provider, node_names, callback) ->
 
 exports.reload = (opt, manifest, provider, node_names, callback) ->
 	###
-	This action chains actions down and then up for every node.
+	Chains actions down and then up for every node.
 	###
 	
 	actions = []
@@ -400,7 +413,7 @@ exports.reload = (opt, manifest, provider, node_names, callback) ->
 
 exports.shell =  (opt, manifest, provider, node_names, callback) ->
 	###
-	This action start a shell or executes a command on nodes.
+	Starts a shell or executes a command on the selected node.
 	###
 	
 	actions = []
