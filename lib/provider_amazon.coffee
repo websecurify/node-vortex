@@ -1,6 +1,8 @@
+fs = require 'fs'
 async = require 'async'
 aws_sdk = require 'aws-sdk'
 logsmith = require 'logsmith'
+path_extra = require 'path-extra'
 portchecker = require 'portchecker'
 
 # ---
@@ -177,9 +179,17 @@ exports.Provider = class
 				return callback null
 				
 		#
+		# Next we obtain shell spec.
+		#
+		obtain_shell_spec = (callback) =>
+			@shell_spec node_name, (err, spec) ->
+				return callback err if err
+				return callback null, spec
+				
+		#
 		# Next we check the exposed files and folders.
 		#
-		prepare_exposed = (callback) =>
+		prepare_exposed = (spec, callback) =>
 			try
 				node = @get_node node_name
 			catch e
@@ -192,20 +202,14 @@ exports.Provider = class
 				
 				fs.stat source_path, (err, stats) =>
 					return callback new Error "cannot expose #{exposure.src} because it does not exist" if err
+					return callback null
 					
-					if stats.isDirectory()
-						# TODO: add code here
-						return callback null
-					else
-						# TODO: add code here
-						return callback null
-						
 			async.eachSeries ({src: src, dst: dst} for src, dst of node.expose), handle_exposure, callback
 			
 		#
 		# Action on the tasks.
 		#
-		async.waterfall [verify_status, prepare_exposed], (err, state, address) ->
+		async.waterfall [verify_status, obtain_shell_spec, prepare_exposed], (err, state, address) ->
 			return callback err if err
 			return callback null
 			
@@ -478,10 +482,20 @@ exports.Provider = class
 			parts.push ':' + encodeURIComponent password if password
 			parts.push '@'
 			parts.push address
+			parts.push ':' + ssh_port
 			parts.push ';privateKey=' + encodeURIComponent private_key if private_key
 			parts.push ';passphrase=' + encodeURIComponent passphrase if passphrase
 			
-			return callback null, parts.join ''
+			spec = parts.join ''
+			spec_options =
+				username: username
+				password: password
+				host: address
+				port: ssh_port
+				privateKey: private_key
+				passphrase: passphrase
+				
+			return callback null, spec, spec_options
 			
 		#
 		# Action on the tasks.
