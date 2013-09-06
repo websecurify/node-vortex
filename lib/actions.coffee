@@ -1,8 +1,16 @@
-var path = require('path');
-var async = require('async');
-var roost = require('roost');
-var logsmith = require('logsmith');
+fs = require 'fs'
+path = require 'path'
+async = require 'async'
+roost = require 'roost'
+logsmith = require 'logsmith'
 
+# ---
+
+shell = require './shell'
+
+# ---
+
+`
 // ---
 
 var helpers = {};
@@ -266,124 +274,6 @@ function provision(opt, manifest, provider, nodes, callback) {
 	async.each(nodes, processNode, callback);
 }
 
-function status(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		logsmith.verbose('status node', helpers.q(node));
-		
-		provider.status(node, function (err, state, address) {
-			if (err) {
-				return callback(err);
-			}
-			
-			var args = ['node', helpers.q(node), 'is', state];
-			
-			if (address) {
-				args.push('at');
-				args.push(address);
-			}
-			
-			logsmith.info.apply(logsmith, args);
-			
-			return callback();
-		});
-	};
-	
-	async.each(nodes, processNode, callback);
-}
-
-function boot(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		logsmith.verbose('boot node', helpers.q(node));
-		
-		provider.boot(node, function (err, state, address) {
-			if (err) {
-				logsmith.error(err.message);
-				
-				return callback();
-			}
-			
-			var args = ['node', helpers.q(node), 'is', state];
-			
-			if (address) {
-				args.push('at');
-				args.push(address);
-			}
-			
-			logsmith.info.apply(logsmith, args);
-			
-			return callback();
-		});
-	};
-	
-	async.each(nodes, processNode, callback);
-}
-
-function halt(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		logsmith.verbose('halt node', helpers.q(node));
-		
-		provider.halt(node, function (err, state, address) {
-			if (err) {
-				logsmith.error(err.message);
-				
-				return callback();
-			}
-			
-			var args = ['node', helpers.q(node), 'is', state];
-			
-			if (address) {
-				args.push('at');
-				args.push(address);
-			}
-			
-			logsmith.info.apply(logsmith, args);
-			
-			return callback();
-		});
-	};
-	
-	async.each(nodes, processNode, callback);
-}
-
-function reload(opt, manifest, provider, nodes, callback) {
-	var halt = function (node, callback) {
-		exports.halt(opt, manifest, provider, [node], function (err) {
-			if (err) {
-				return callback(err);
-			}
-			
-			return callback(null, node);
-		});
-	};
-	
-	var boot = function (node, callback) {
-		exports.boot(opt, manifest, provider, [node], function (err) {
-			if (err) {
-				return callback(err);
-			}
-			
-			return callback(null, node);
-		});
-	};
-	
-	var processNode = function (node, callback) {
-		logsmith.verbose('reload node', helpers.q(node));
-		
-		async.waterfall(
-			[
-				function (callback) {
-					return callback(null, node);
-				},
-				
-				halt,
-				boot
-			],
-			callback
-		);
-	};
-	
-	async.each(nodes, processNode, callback);
-}
 
 function shell(opt, manifest, provider, nodes, callback) {
 	var obtainShellSpec = function (node, callback) {
@@ -483,98 +373,242 @@ function shell(opt, manifest, provider, nodes, callback) {
 
 // ---
 
-function up(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		provider.status(node, function (err, state, address) {
-			if (err) {
-				return callback(err);
-			}
-			
-			if (state == 'stopped') {
-				provider.boot(node, function (err, state, address) {
-					if (err) {
-						return callback(err);
-					}
-					
-					var performProvision = function (state, address) {
-						if (state == 'running' && address) {
-							exports.provision(opt, manifest, provider, [node], callback);
-						} else {
-							var callee = arguments.callee;
-							
-							setTimeout(function () {
-								provider.status(node, function (err, state, address) {
-									if (err) {
-										return callback(err);
-									}
-									
-									callee(state, address);
-								});
-							}, 1000);
-						}
-					};
-					
-					performProvision(state, address);
-				});
-			} else {
-				return callback();
-			}
-		});
-	};
-	
-	async.each(nodes, processNode, callback);
-};
-
-function down(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		provider.status(node, function (err, state, address) {
-			if (err) {
-				return callback(err);
-			}
-			
-			if (state == 'stopped') {
-				return callback();
-			} else {
-				provider.halt(node, callback);
-			}
-		});
-	};
-	
-	async.each(nodes, processNode, callback);
-};
-
-// ---
-
-function shellspec(opt, manifest, provider, nodes, callback) {
-	var processNode = function (node, callback) {
-		provider.shell_spec(node, function (err, spec) {
-			if (err) {
-				return callback(err);
-			}
-			
-			console.log(node, spec);
-			
-			return callback(null, spec);
-		});
-	};
-	
-	async.eachSeries(nodes, processNode, callback);
-};
-
-// ---
-
 exports.provision = provision;
-exports.status = status;
-exports.boot = boot;
-exports.halt = halt;
-exports.reload = reload;
 exports.shell = shell;
+`
 
-// ---
+# ---
 
-exports.up = up;
-exports.down = down;
+exports.status = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action obtains the status of nodes.
+	###
+	process_node = (node_name, callback) ->
+		logsmith.verbose "query status for node #{node_name}"
+		
+		provider.status node_name, (err, state, address) ->
+			return callback err if err
+			
+			args = ['node', node_name, 'is', state]
+			
+			if address
+				args.push 'at'
+				args.push address
+				
+			logsmith.info args...
+			
+			return callback null
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
 
-// ---
+exports.boot = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action boots nodes.
+	###
+	process_node = (node_name, callback) ->
+		logsmith.verbose "halt node #{node_name}"
+		
+		provider.boot node_name, (err, state, address) ->
+			logsmith.error err.message if err
+			
+			return callback null if err
+			
+			args = ['node', node_name, 'is', state]
+			
+			if address
+				args.push 'at'
+				args.push address
+				
+			logsmith.info args...
+			
+			return callback null
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
 
-exports.shellspec = shellspec;
+exports.halt = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action halts nodes.
+	###
+	process_node = (node_name, callback) ->
+		logsmith.verbose "halt node #{node_name}"
+		
+		provider.halt node_name, (err, state, address) ->
+			logsmith.error err.message if err
+			
+			return callback null if err
+			
+			args = ['node', node_name, 'is', state]
+			
+			if address
+				args.push 'at'
+				args.push address
+				
+			logsmith.info args...
+			
+			return callback null
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.restart = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action chains actions halt and then boot for every node.
+	###
+	actions = []
+	
+	actions.push (node_name, callback) ->
+		exports.halt opt, manifest, provider, [node_name], (err) ->
+			return callback err if err
+			return callback null, node_name
+			
+	actions.push (node_name, callback) ->
+		exports.boot opt, manifest, provider, [node_name], (err) ->
+			return callback err if err
+			return callback null, node_name
+			
+	process_node = (node_name, callback) ->
+		logsmith.verbose "restart node #{node_name}"
+		
+		current_actions = [((callback) -> callback null, node_name), actions...]
+		
+		async.waterfall current_actions, callback
+		
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.up = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action will bring up a node by first booting it and than starting the provisioning process.
+	###
+	process_node = (node_name, callback) ->
+		provider.status node_name, (err, state, address) ->
+			return callback err if err
+			
+			if state == 'stopped'
+				provider.boot node_name, (err, state, address) ->
+					return callback err if err
+					
+					perform_provision = (state, address) ->
+						if  state == 'running' and address
+							exports.provision opt, manifest, provider, [node_name], callback
+						else
+							callee = arguments.callee
+							
+							timeout_handler = () ->
+								provider.status node_name, (err, state, address) ->
+									return callback err if err
+									return callee state, address
+									
+							setTimeout timeout_handler, 1000
+							
+					perform_provision state, address
+			else
+				return callback null
+				
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.down = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action will bring down a node. This is esentially a wrapper around the halt action.
+	###
+	process_node = (node_name, callback) ->
+		provider.status node_name, (err, state, address) ->
+			return callback err if err
+			return callback null if state == 'stopped'
+			
+			provider.halt node_name, callback
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.reload = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action chains actions down and then up for every node.
+	###
+	actions = []
+	
+	actions.push (node_name, callback) ->
+		exports.down opt, manifest, provider, [node_name], (err) ->
+			return callback err if err
+			return callback null, node_name
+			
+	actions.push (node_name, callback) ->
+		exports.up opt, manifest, provider, [node_name], (err) ->
+			return callback err if err
+			return callback null, node_name
+			
+	process_node = (node_name, callback) ->
+		logsmith.verbose "reload node #{node_name}"
+		
+		current_actions = [((callback) -> callback null, node_name), actions...]
+		
+		async.waterfall current_actions, callback
+		
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.shellspec = (opt, manifest, provider, node_names, callback) ->
+	###
+	This action output the shell spec of a node using the selected provider.
+	###
+	process_node = (node_name, callback) ->
+		provider.shell_spec node_name, (err, spec) ->
+			return callback err if err
+			
+			logsmith.info node_name, '->', spec
+			
+			return callback null, spec
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.shell =  (opt, manifest, provider, node_names, callback) ->
+	###
+	This action start a shell or executes a command on nodes.
+	###
+	actions = []
+	
+	actions.push (node_name, callback) ->
+		provider.shell_spec node_name, (err, spec) ->
+			return callback err if err
+			return callback new Error "unsupported shell spec #{spec}" if not spec.match /^ssh:/i
+			return callback null, spec
+			
+	actions.push (spec, callback) ->
+		ssh = new shell.Ssh spec, manifest
+		command = opt.argv.slice opt.argv.indexOf('--') + 1
+		
+		if command.length == opt.argv.length
+			command = null
+		else
+			command = command.join(' ')
+			
+		if command
+			ssh.exec command
+		else
+			do ssh.shell
+			
+		ssh.ignite false, (err) ->
+			return callback err if err
+			return callback null
+			
+	process_node = (node_name, callback) ->
+		logsmith.info "shell into node #{node_name}"
+		
+		current_actions = [((callback) -> callback null, node_name), actions...]
+		
+		async.waterfall current_actions, callback
+		
+	async.eachSeries node_names, process_node, callback
+	
