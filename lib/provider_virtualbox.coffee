@@ -1,6 +1,5 @@
 fs = require 'fs'
 url = require 'url'
-roost = require 'roost'
 async = require 'async'
 logsmith = require 'logsmith'
 path_extra = require 'path-extra'
@@ -9,30 +8,32 @@ portchecker = require 'portchecker'
 
 # ---
 
+shell = require './shell'
 download = require './download'
 
 # ---
 
 exports.Provider = class
+	###
+	This class exposes VirtualBox as a provider to Vortex.
+	###
+	
 	constructor: (@manifest) ->
-		# pass
+		###
+		The provider accepts a manifest as a parameter by specification.
+		###
 		
-	###
-		* Get node definition by name. The method will throw an exception if the node is not found.
-		*
-		* @param {string} node_name
-	###
 	get_node: (node_name) ->
+		###
+		This method returns a node by looking up its name. It throws an error if the node is not found.
+		###
 		return @manifest.nodes[node_name] if @manifest.nodes? and @manifest.nodes[node_name]?
-		
 		throw new Error "node #{node_name} does not exist"
 		
-	###
-		* Extract node's namespace by looking at the node itself and upper layers of the manifest.
-		*
-		* @param {string} node_name
-	###
 	extract_namespace: (node_name) ->
+		###
+		Extracts a namespace by looking it up in the node it itself and upper layers of the manifest
+		###
 		try
 			node = @get_node node_name
 		catch
@@ -41,31 +42,24 @@ exports.Provider = class
 		return node.namespace if node?.namespace?
 		return @manifest.namespace if @manifest.namespace?
 		
-	###
-		* Creates a handle from node name. This method is used for creating VirtualBox friendlier names.
-		*
-		* @param {string} node_name
-	###
 	get_node_handle: (node_name) ->
+		###
+		Creates a VirtualBox friendlier name out of a node name. The method take into account the namespace.
+		###
 		namespace = @extract_namespace node_name
 		
 		return (if namespace then namespace + ':' else '') + node_name
 		
-	###
-		* Creates a share handle from share name. This method is used for creating VirtualBox friendlier share names.
-		*
-		* @param {string} node_name
-	###
 	get_share_handle: (share_name) ->
+		###
+		Creates a VirtualBox friendlier name out of a share name.
+		###
 		return share_name.replace(/[^\w]+/, '_').replace(/_+/, '_')
 		
-	###
-		* Extracts a property by looking into a node and upper layers of the manifest.
-		*
-		* @param {string} property_name
-		* @param {string} node_name
-	###
 	extract_property: (property_name, node_name) ->
+		###
+		Extracts a property by looking into a node and upper layers of the manifest.
+		###
 		try
 			node = @get_node node_name
 		catch e
@@ -75,9 +69,9 @@ exports.Provider = class
 		return @manifest.virtualbox[property_name] if @manifest.virtualbox?[property_name]?
 		return null
 		
-	###
-		* Helper functions for extracting properties by looking into a node and upper layers of the manifest.
-	###
+	#
+	# Helper functions for extracting various properties.
+	#
 	extract_vm_id: (node_name) -> @extract_property 'vmId', node_name
 	extract_vm_url: (node_name) -> @extract_property 'vmUrl', node_name
 	extract_username: (node_name) -> @extract_property 'username', node_name
@@ -85,15 +79,14 @@ exports.Provider = class
 	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
 	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
 	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
+	#
+	#
+	#
 	
-	###
-		* Schedules import operation. The function will check if the vm_id exists before execution.
-		*
-		* @param {string} vm_url
-		* @param {string} vm_id
-		* @param {function(?err)} callback
-	###
 	schedule_import: (vm_url, vm_id, callback) ->
+		###
+		Schedules import operation. The function will check if the vm_id exists before execution.
+		###
 		if not @import_queue?
 			@import_queue = async.queue (task, callback) =>
 				vboxmanage.machine.info task.vm_id, (err, info) =>
@@ -106,14 +99,10 @@ exports.Provider = class
 			
 		@import_queue.push task, callback
 		
-	###
-		* Performs import operation.
-		*
-		* @param {string} vm_url
-		* @param {string} vm_id
-		* @param {function(?err)} callback
-	###
 	perform_import: (vm_url, vm_id, callback) ->
+		###
+		Performs import operation.
+		###
 		logsmith.debug "import #{vm_url} into #{vm_id}"
 		
 		try
@@ -148,71 +137,78 @@ exports.Provider = class
 					return callback err if err
 					return callback null
 					
-	###
-		* Provider method for bootstrapping a node.
-		*
-		* @param {string} node_name
-		* @param {function(?err)} callback
-	###
 	bootstrap: (node_name, callback) ->
-		`
-		var node = this.getNodeByName(nodeName);
+		###
+		Provider-specific method for bootstrapping a node.
+		###
+		commands = [
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo ifconfig eth1 0.0.0.0 0.0.0.0'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo ifconfig eth2 0.0.0.0 0.0.0.0'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo dhclient -r eth1 eth2'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo dhclient eth1 eth2'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo mkdir -p /etc/vortex/flags/'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo chmod a+rx /etc/vortex/flags/'
+			'[ ! -f /etc/vortex/flags/network_ready ] && sudo touch /etc/vortex/flags/network_ready'
+		]
 		
-		if (!node.hasOwnProperty('roost')) {
-			node.roost = {
-				merge: true
-			};
-		}
+		node_handle = @get_node_handle node_name
 		
-		if (!node.roost.hasOwnProperty('bootstrap')) {
-			node.roost.bootstrap = [];
-		}
-		
-		if (!node.roost.sync) {
-			node.roost.sync = {};
-		}
-		
-		node.roost.bootstrap.push('sudo ifconfig eth1 0.0.0.0 0.0.0.0');
-		node.roost.bootstrap.push('sudo ifconfig eth2 0.0.0.0 0.0.0.0');
-		node.roost.bootstrap.push('sudo dhclient -r eth1 eth2');
-		node.roost.bootstrap.push('sudo dhclient eth1 eth2');
-		node.roost.bootstrap.push('sleep 10');
-		
-		if (node.hasOwnProperty('expose')) {
-			var self = this;
-			
-			Object.keys(node.expose).forEach(function (source) {
-				var sourcePath = path_extra.resolve(path_extra.dirname(self.manifest.meta.location), source);
+		#
+		# First we check the exposed files and folders.
+		#
+		prepare_exposed = (callback) =>
+			try
+				node = @get_node node_name
+			catch e
+				node = null
 				
-				fs.stat(sourcePath, function (err, stats) {
-					if (err) {
-						return callback(helpers.e('cannot expose', helpers.q(source), 'because it does not exist'));
-					}
+			return callback null if not node?.expose?
+			
+			handle_exposure = (exposure, callback) =>
+				source_path = path_extra.resolve path_extra.dirname(@manifest.meta.location), exposure.src
+				
+				fs.stat source_path, (err, stats) =>
+					return callback new Error "cannot expose #{exposure.src} because it does not exist" if err
 					
-					var destination = node.expose[source];
-					
-					if (stats.isDirectory()) {
-						var share = self.get_share_handle(destination);
+					if stats.isDirectory()
+						share_handle = @get_share_handle exposure.dst
+						q_dest = shell.quote exposure.dst
+						q_share_handle = shell.quote share_handle
 						
-						node.roost.bootstrap.push('sudo mkdir -p ' + roost.shell.quote(destination));
-						node.roost.bootstrap.push('sudo mount.vboxsf ' + roost.shell.quote(share) + ' ' + roost.shell.quote(destination) + ' -o rw');
-					} else {
-						node.roost.sync[source] = destination;
-					}
-				});
-			});
-		}
-		
-		return callback();
-		`
-		
-	###
-		* Provider method for quering the status of a node.
-		*
-		* @param {string} node_name
-		* @param {function(?err)} callback
-	###
+						commands.push "sudo mkdir -p #{q_dest}"
+						commands.push "sudo mount.vboxsf #{q_share_handle} #{q_dest} -o rw"
+						
+						return callback null
+					else
+						vboxmanage.instance.copy_from source_path, exposure.dst, callback
+						
+			async.eachSeries ({src: src, dst: dst} for src, dst of node.expose), handle_exposure, callback
+			
+		#
+		# Finally we execute all commands that were scheduled.
+		#
+		run_commands = (callback) ->
+			run_command = (command, callback) ->
+				vboxmanage.instance.exec node_handle, 'vortex', 'vortex', '/bin/sh', '-c', command, (err, output) ->
+					return callback err if err
+					
+					process.stdout.write output if logsmith.level in ['verbose', 'debug', 'silly']
+					
+					return callback null
+					
+			async.eachSeries commands, run_command, callback
+			
+		#
+		# Action on the task.
+		#
+		async.waterfall [prepare_exposed, run_commands], (err, state, address) ->
+			return callback err if err
+			return callback null
+			
 	status: (node_name, callback) ->
+		###
+		Provider-specific method for checking the status a node.
+		###
 		node_handle = @get_node_handle node_name
 		
 		#
@@ -255,13 +251,10 @@ exports.Provider = class
 			return callback err if err
 			return callback null, state, address
 			
-	###
-		* Provider method for booting a node.
-		*
-		* @param {string} node_name
-		* @param {function(?err)} callback
-	###
 	boot: (node_name, callback) ->
+		###
+		Provider-specific method for booting a node.
+		###
 		vm_id = @extract_vm_id node_name
 		
 		return callback new Error 'no virtualbox "vmId" paramter specified for node' if not vm_id
@@ -373,13 +366,11 @@ exports.Provider = class
 			return callback err if err
 			return @status node_name, callback
 			
-	###
-		* Provider method for halting a node.
-		*
-		* @param {string} node_name
-		* @param {function(?err)} callback
-	###
 	halt: (node_name, callback) ->
+		###
+		Provider-specific method for halting a node.
+		###
+		
 		node_handle = @get_node_handle node_name
 		
 		#
@@ -417,13 +408,11 @@ exports.Provider = class
 			return callback err if err
 			return @status node_name, callback
 			
-	###
-		* Provider method for obtaining the shell spec of a node.
-		*
-		* @param {string} node_name
-		* @param {function(?err)} callback
-	###
 	shell_spec: (node_name, callback) ->
+		###
+		Provider-specific method for obtaining a shell spec from a node.
+		###
+		
 		password = @extract_password node_name
 		private_key = @extract_private_key node_name
 		
