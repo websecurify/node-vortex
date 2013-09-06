@@ -32,7 +32,7 @@ exports.Provider = class
 		
 	extract_namespace: (node_name) ->
 		###
-		Extracts a namespace by looking it up in the node it itself and upper layers of the manifest
+		Extracts a namespace by looking it up in the node itself and upper layers of the manifest
 		###
 		try
 			node = @get_node node_name
