@@ -31,6 +31,34 @@ exports.Provider = class
 		return @manifest.nodes[node_name] if @manifest.nodes? and @manifest.nodes[node_name]?
 		throw new Error "node #{node_name} does not exist"
 		
+	extract_property: (property_name, node_name) ->
+		###
+		Extracts a property by looking into a node and upper layers of the manifest.
+		###
+		
+		try
+			node = @get_node node_name
+		catch e
+			node = null
+			
+		return node.virtualbox[property_name] if node?.virtualbox?[property_name]?
+		return @manifest.virtualbox[property_name] if @manifest.virtualbox?[property_name]?
+		return null
+		
+	#
+	# Helper functions for extracting various properties.
+	#
+	extract_vm_id: (node_name) -> @extract_property 'vmId', node_name
+	extract_vm_url: (node_name) -> @extract_property 'vmUrl', node_name
+	extract_username: (node_name) -> @extract_property 'username', node_name
+	extract_password: (node_name) -> @extract_property 'password', node_name
+	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
+	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
+	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
+	#
+	#
+	#
+	
 	extract_namespace: (node_name) ->
 		###
 		Extracts a namespace by looking it up in the node itself and upper layers of the manifest
@@ -60,34 +88,6 @@ exports.Provider = class
 		
 		return share_name.replace(/[^\w]+/, '_').replace(/_+/, '_')
 		
-	extract_property: (property_name, node_name) ->
-		###
-		Extracts a property by looking into a node and upper layers of the manifest.
-		###
-		
-		try
-			node = @get_node node_name
-		catch e
-			node = null
-			
-		return node.virtualbox[property_name] if node?.virtualbox?[property_name]?
-		return @manifest.virtualbox[property_name] if @manifest.virtualbox?[property_name]?
-		return null
-		
-	#
-	# Helper functions for extracting various properties.
-	#
-	extract_vm_id: (node_name) -> @extract_property 'vmId', node_name
-	extract_vm_url: (node_name) -> @extract_property 'vmUrl', node_name
-	extract_username: (node_name) -> @extract_property 'username', node_name
-	extract_password: (node_name) -> @extract_property 'password', node_name
-	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
-	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
-	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
-	#
-	#
-	#
-	
 	schedule_import: (vm_url, vm_id, callback) ->
 		###
 		Schedules import operation. The function will check if the vm_id exists before execution.
