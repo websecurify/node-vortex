@@ -27,6 +27,7 @@ exports.Provider = class
 		###
 		This method returns a node by looking up its name. It throws an error if the node is not found.
 		###
+		
 		return @manifest.nodes[node_name] if @manifest.nodes? and @manifest.nodes[node_name]?
 		throw new Error "node #{node_name} does not exist"
 		
@@ -34,6 +35,7 @@ exports.Provider = class
 		###
 		Extracts a namespace by looking it up in the node itself and upper layers of the manifest
 		###
+		
 		try
 			node = @get_node node_name
 		catch
@@ -46,6 +48,7 @@ exports.Provider = class
 		###
 		Creates a VirtualBox friendlier name out of a node name. The method take into account the namespace.
 		###
+		
 		namespace = @extract_namespace node_name
 		
 		return (if namespace then namespace + ':' else '') + node_name
@@ -54,12 +57,14 @@ exports.Provider = class
 		###
 		Creates a VirtualBox friendlier name out of a share name.
 		###
+		
 		return share_name.replace(/[^\w]+/, '_').replace(/_+/, '_')
 		
 	extract_property: (property_name, node_name) ->
 		###
 		Extracts a property by looking into a node and upper layers of the manifest.
 		###
+		
 		try
 			node = @get_node node_name
 		catch e
@@ -87,6 +92,7 @@ exports.Provider = class
 		###
 		Schedules import operation. The function will check if the vm_id exists before execution.
 		###
+		
 		if not @import_queue?
 			@import_queue = async.queue (task, callback) =>
 				vboxmanage.machine.info task.vm_id, (err, info) =>
@@ -103,6 +109,7 @@ exports.Provider = class
 		###
 		Performs import operation.
 		###
+		
 		logsmith.debug "import #{vm_url} into #{vm_id}"
 		
 		try
@@ -141,6 +148,7 @@ exports.Provider = class
 		###
 		Provider-specific method for bootstrapping a node.
 		###
+		
 		commands = [
 			'sudo mkdir -p /etc/vortex/flags/'
 			'sudo chmod a+rx /etc/vortex/flags/'
@@ -207,7 +215,7 @@ exports.Provider = class
 			async.eachSeries commands, run_command, callback
 			
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [verify_status, prepare_exposed, run_commands], (err, state, address) ->
 			return callback err if err
@@ -217,10 +225,11 @@ exports.Provider = class
 		###
 		Provider-specific method for checking the status a node.
 		###
+		
 		node_handle = @get_node_handle node_name
 		
 		#
-		# First we obtain the state of the node.
+		# First we obtain basic info about the node.
 		#
 		obtain_machine_state = (callback) ->
 			vboxmanage.machine.info node_handle, (err, info) ->
@@ -253,7 +262,7 @@ exports.Provider = class
 				return callback null, state, address
 				
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [obtain_machine_state, obtain_machine_address], (err, state, address) ->
 			return callback err if err
@@ -263,6 +272,7 @@ exports.Provider = class
 		###
 		Provider-specific method for booting a node.
 		###
+		
 		vm_id = @extract_vm_id node_name
 		
 		return callback new Error 'no virtualbox "vmId" paramter specified for node' if not vm_id
@@ -318,20 +328,20 @@ exports.Provider = class
 						vboxnet5:
 							ip: '10.100.100.1'
 							netmask: '255.255.255.0'
-						
+							
 							dhcp:
 								lower_ip: '10.100.100.101'
 								upper_ip: '10.100.100.254'
-							
+								
 					internal:
 						vortex:
 							ip: '10.200.200.1'
 							netmask: '255.255.255.0'
-						
+							
 							dhcp:
 								lower_ip: '10.200.200.101'
 								upper_ip: '10.200.200.254'
-							
+								
 			vboxmanage.setup.system config, callback
 			
 		#
@@ -368,7 +378,7 @@ exports.Provider = class
 			vboxmanage.instance.start node_handle, callback
 			
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [verify_status, attemp_to_remove_vm, ensure_vm_id, clone_vm, ensure_networking, setup_vm, start_vm], (err) =>
 			return callback err if err
@@ -410,7 +420,7 @@ exports.Provider = class
 				return callback null
 				
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [verify_status, attempt_to_stop_vm, attempt_to_remove_vm], (err) =>
 			return callback err if err
@@ -443,7 +453,7 @@ exports.Provider = class
 		passphrase = @extract_passphrase node_name
 		
 		#
-		# First we obtain the node status looking for the address and to check if the state is correct.
+		# First we obtain the node status by looking for the address and to check if the state is correct.
 		#
 		obtain_status = (callback) =>
 			@status node_name, (err, state, address) ->
@@ -484,7 +494,7 @@ exports.Provider = class
 			return callback null, parts.join ''
 			
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [obtain_status, ensure_port, build_spec], callback
 		

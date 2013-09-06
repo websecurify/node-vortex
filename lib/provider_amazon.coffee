@@ -314,7 +314,7 @@ exports.Provider = class
 				return callback null, instance_id
 				
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [verify_status, run_instance, map_tags], (err) =>
 			return callback err if err
@@ -371,7 +371,7 @@ exports.Provider = class
 				return callback null, instance_id
 				
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [verify_status, terminate_instance, unmap_tags], (err) =>
 			return callback err if err
@@ -404,7 +404,7 @@ exports.Provider = class
 		passphrase = @extract_passphrase node_name
 		
 		#
-		# First we obtain the node status looking for the address and to check if the state is correct.
+		# First we obtain the node status by looking for the address and to check if the state is correct.
 		#
 		obtain_status = (callback) =>
 			@status node_name, (err, state, address) ->
@@ -445,7 +445,7 @@ exports.Provider = class
 			return callback null, parts.join ''
 			
 		#
-		# Action on the task.
+		# Action on the tasks.
 		#
 		async.waterfall [obtain_status, ensure_port, build_spec], callback
 		
