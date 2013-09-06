@@ -1,4 +1,8 @@
 exports.main = (argv=process.argv.slice(2)) ->
+	###
+	Main into Vortex. Command options can be passed as an array into args.
+	###
+	
 	logsmith = require 'logsmith'
 	node_getopt = require 'node-getopt'
 	

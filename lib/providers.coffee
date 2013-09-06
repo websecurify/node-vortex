@@ -8,6 +8,10 @@ instances = {}
 # ---
 
 exports.instance = (name, manifest) ->
+	###
+	Gets a single instance of a Provider. The methods esentially provides a way of getting singleton instances.
+	###
+	
 	nice_name = name.toLowerCase()
 	
 	if not instances[nice_name]?
