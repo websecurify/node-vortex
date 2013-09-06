@@ -14,7 +14,7 @@ exports.Ssh = class extends roost.target_ssh.Target
 		
 		@step (callback) =>
 			@ssh2.shell {term: process.env['TERM'], rows: process.stdout.rows, cols: process.stdout.columns}, (err, stream) =>
-				return callback err if err;
+				return callback err if err
 				
 				on_resize = () ->
 					stream.setWindow process.stdout.rows, process.stdout.columns
