@@ -16,7 +16,7 @@ exports.get = (url, file, callback) ->
 	switch
 		when url.match /^http:\/\//i then getter = http
 		when url.match /^https:\/\//i then getter = https
-		else return callback new Error "urecognized scheme for url #{url}" if callback
+		else return callback new Error "unrecognized scheme for url #{url}" if callback
 		
 	try
 		socket = getter.get url, (response) ->
