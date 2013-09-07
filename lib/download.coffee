@@ -42,9 +42,9 @@ exports.get = (url, file, callback) ->
 					
 			stream = fs.createWriteStream file
 			
-			stream.on 'error', (error) -> callback new Error "cannot write to file #{file} for download #{url}" if callback
-			response.on 'error', (error) -> callback new Error "cannot download from url #{url} to file #{file}" if callback
-			response.on 'end', () -> callback null if callback
+			stream.on 'error', (error) -> callback new Error "cannot write to file #{file} for download #{url}"
+			response.on 'error', (error) -> callback new Error "cannot download from url #{url} to file #{file}"
+			response.on 'end', () -> callback null
 			response.pipe stream
 			
 		socket.on 'error', (error) -> callback error if callback
