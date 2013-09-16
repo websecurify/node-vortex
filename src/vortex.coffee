@@ -17,6 +17,7 @@ exports.main = (argv=process.argv.slice(2)) ->
 		['d', 'dry', 'Dry run the roost manifest.']
 		['v', 'verbose+', 'Make it verbose.']
 		['c', 'colorize', 'Make it pretty.']
+		['V', 'version', 'Shows version.']
 		['h', 'help', 'Display this help.']
 	]
 	
@@ -25,6 +26,11 @@ exports.main = (argv=process.argv.slice(2)) ->
 	
 	logsmith.setGlobalLevel(3 - (if opt.options.verbose.length < 3 then opt.options.verbose.length else 3)) if opt.options.verbose?
 	logsmith.setGlobalColorization(opt.options.colorize) if opt.options.colorize?
+	
+	if opt.options.version
+		logsmith.info require('../package.json').version
+		
+		return
 	
 	exit_code = 0
 	
