@@ -2,8 +2,4 @@
 
 // ---
 
-require('coffee-script');
-
-// ---
-
 require('../lib/vortex').main();
