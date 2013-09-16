@@ -1,0 +1,32 @@
+{
+	"namespace": "puppet-helloworld",
+	
+	"virtualbox": {
+		"vmId": "precise64",
+		"vmUrl": "https://s3.amazonaws.com/node-vortex/precise64.ova",
+		"username": "vortex",
+		"password": "vortex"
+	},
+	
+	"nodes": {
+		"puppet": {
+			"expose": {
+				"./puppet": "/puppet"
+			},
+			
+			"roost": {
+				"apt": {
+					"update": true
+				},
+				
+				"packages": [
+					"puppet"
+				],
+				
+				"commands": [
+					"puppet apply --verbose /puppet/manifests/helloworld.pp"
+				]
+			}
+		}
+	}
+}
