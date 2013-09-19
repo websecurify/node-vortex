@@ -24,7 +24,7 @@
 				],
 				
 				"commands": [
-					"puppet apply --verbose /puppet/manifests/helloworld.pp"
+					"puppet apply --verbose --modulepath /puppet/modules/ /puppet/manifests/helloworld.pp"
 				]
 			}
 		}
