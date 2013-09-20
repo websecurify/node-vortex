@@ -82,7 +82,7 @@ exports.boot = (opt, manifest, provider, node_names, callback) ->
 	# Call provider's boot for each node.
 	#
 	process_node = (node_name, callback) ->
-		logsmith.verbose "halt node #{node_name}"
+		logsmith.verbose "boot node #{node_name}"
 		
 		provider.boot node_name, (err, state, address) ->
 			logsmith.error err.message if err
@@ -115,6 +115,66 @@ exports.halt = (opt, manifest, provider, node_names, callback) ->
 		logsmith.verbose "halt node #{node_name}"
 		
 		provider.halt node_name, (err, state, address) ->
+			logsmith.error err.message if err
+			
+			return callback null if err
+			
+			args = ['node', node_name, 'is', state]
+			
+			if address
+				args.push 'at'
+				args.push address
+				
+			logsmith.info args...
+			
+			return callback null
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.pause = (opt, manifest, provider, node_names, callback) ->
+	###
+	Ensures that the node is paused.
+	###
+	
+	#
+	# Call provider's pause for each node.
+	#
+	process_node = (node_name, callback) ->
+		logsmith.verbose "pause node #{node_name}"
+		
+		provider.pause node_name, (err, state, address) ->
+			logsmith.error err.message if err
+			
+			return callback null if err
+			
+			args = ['node', node_name, 'is', state]
+			
+			if address
+				args.push 'at'
+				args.push address
+				
+			logsmith.info args...
+			
+			return callback null
+			
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.resume = (opt, manifest, provider, node_names, callback) ->
+	###
+	Ensures that the node is resumed.
+	###
+	
+	#
+	# Call provider's resume for each node.
+	#
+	process_node = (node_name, callback) ->
+		logsmith.verbose "resume node #{node_name}"
+		
+		provider.resume node_name, (err, state, address) ->
 			logsmith.error err.message if err
 			
 			return callback null if err
@@ -320,37 +380,43 @@ exports.provision = (opt, manifest, provider, node_names, callback) ->
 
 exports.up = (opt, manifest, provider, node_names, callback) ->
 	###
-	Will bring up a node by first booting it and than starting the provisioning process.
+	Will bring up a node by first booting/resuming it and than starting the provisioning process.
 	###
 	
 	#
-	# Boot and provision nodes.
+	# Boot/resume and provision nodes.
 	#
 	process_node = (node_name, callback) ->
 		provider.status node_name, (err, state, address) ->
 			return callback err if err
 			
-			if state == 'stopped'
-				provider.boot node_name, (err, state, address) ->
-					return callback err if err
+			perform_provision = (state, address) ->
+				if  state == 'running' and address
+					exports.provision opt, manifest, provider, [node_name], callback
+				else
+					callee = arguments.callee
 					
-					perform_provision = (state, address) ->
-						if  state == 'running' and address
-							exports.provision opt, manifest, provider, [node_name], callback
-						else
-							callee = arguments.callee
+					timeout_handler = () ->
+						provider.status node_name, (err, state, address) ->
+							return callback err if err
+							return callee state, address
 							
-							timeout_handler = () ->
-								provider.status node_name, (err, state, address) ->
-									return callback err if err
-									return callee state, address
-									
-							setTimeout timeout_handler, 1000
-							
-					perform_provision state, address
-			else
-				return callback null
-				
+					setTimeout timeout_handler, 1000
+					
+			switch state
+				when 'stopped'
+					provider.boot node_name, (err, state, address) ->
+						return callback err if err
+						
+						perform_provision state, address
+				when 'paused'
+					provider.resume node_name, (err, state, address) ->
+						return callback err if err
+						
+						perform_provision state, address
+				else
+					return callback null
+					
 	async.eachSeries node_names, process_node, callback
 	
 # ---
