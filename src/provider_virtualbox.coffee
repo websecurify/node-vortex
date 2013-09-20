@@ -238,11 +238,12 @@ exports.Provider = class
 				state = info.VMState.toLowerCase()
 				
 				switch state
-					when 'saved' then state = 'running'
+					when 'saved' then state = 'paused'
+					when 'paused' then state = 'paused'
 					when 'running' then state = 'running'
 					when 'starting' then state = 'booting'
 					when 'powered off' then state = 'stopped'
-					when 'guru meditation'then state = 'running'
+					when 'guru meditation'then state = 'paused'
 					
 				return callback null, state
 				
@@ -288,6 +289,7 @@ exports.Provider = class
 				return callback new Error "node #{node_name} is already booting" if state == 'booting'
 				return callback new Error "node #{node_name} is already running" if state == 'running'
 				return callback new Error "node #{node_name} is halting" if state == 'halting'
+				return callback new Error "node #{node_name} is paused" if state == 'paused'
 				return callback null
 				
 		#
@@ -423,6 +425,81 @@ exports.Provider = class
 		# Action on the tasks.
 		#
 		async.waterfall [verify_status, attempt_to_stop_vm, attempt_to_remove_vm], (err) =>
+			return callback err if err
+			return @status node_name, callback
+			
+	pause: (node_name, callback) ->
+		###
+		Provider-specific method for pausing a machine.
+		###
+		
+		node_handle = @get_node_handle node_name
+		
+		#
+		# First we verify the status of the node to check if the state is correct.
+		#
+		verify_status = (callback) =>
+			@status node_name, (err, state, address) ->
+				return callback err if err
+				return callback new Error "#{node_name} is already paused" if state == 'paused'
+				return callback new Error "#{node_name} is halting" if state == 'halting'
+				return callback new Error "#{node_name} is stopped" if state == 'stopped'
+				return callback null
+				
+		#
+		# Finally we pause the vm. We use the save method.
+		#
+		pause_vm = (callback) ->
+			vboxmanage.instance.save node_handle, callback
+			
+		#
+		# Action on the tasks.
+		#
+		async.waterfall [verify_status, pause_vm], (err) =>
+			return callback err if err
+			return @status node_name, callback
+			
+	resume: (node_name, callback) ->
+		###
+		Provider-specific method for resuming a machine.
+		###
+		
+		node_handle = @get_node_handle node_name
+		
+		#
+		# First we verify the status of the node to check if the state is correct.
+		#
+		verify_status = (callback) =>
+			@status node_name, (err, state, address) ->
+				return callback err if err
+				return callback new Error "#{node_name} is already booting" if state == 'booting'
+				return callback new Error "#{node_name} is already running" if state == 'running'
+				return callback new Error "#{node_name} is halting" if state == 'halting'
+				return callback new Error "#{node_name} is stopped" if state == 'stopped'
+				return callback null
+				
+		#
+		# Then we attempt to start the vm if the state has been saved. Don't handle errors.
+		#
+		attempt_start_vm = (callback) ->
+			vboxmanage.instance.start node_handle, (err) ->
+				logsmith.exception err if err
+				
+				return callback null
+				
+		#
+		# Finally we attempt to resume the vm. Don't handle errors.
+		#
+		attempt_resume_vm = (callback) ->
+			vboxmanage.instance.resume node_handle, (err) ->
+				logsmith.exception err if err
+				
+				return callback null
+				
+		#
+		# Action on the tasks.
+		#
+		async.waterfall [verify_status, attempt_start_vm, attempt_resume_vm], (err) =>
 			return callback err if err
 			return @status node_name, callback
 			
