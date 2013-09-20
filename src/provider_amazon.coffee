@@ -420,6 +420,18 @@ exports.Provider = class
 			return callback err if err
 			return @status node_name, callback
 			
+	pause: (node_name, callback) ->
+		###
+		Provider-specific method for pausing a machine.
+		###
+		return callback new Error "cannot pause node #{node_name} due to pause not implemented"
+		
+	resume: (node_name, callback) ->
+		###
+		Provider-specific method for resuming a machine.
+		###
+		return callback new Error "cannot resume node #{node_name} due to resume not implemented"
+		
 	shell_spec: (node_name, callback) ->
 		###
 		Provider-specific method for obtaining a shell spec from a node.
