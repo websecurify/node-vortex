@@ -4,6 +4,7 @@ async = require 'async'
 roost = require 'roost'
 logsmith = require 'logsmith'
 shell_quote = require 'shell-quote'
+child_process = require 'child_process'
 
 # ---
 
@@ -477,7 +478,7 @@ exports.reload = (opt, manifest, provider, node_names, callback) ->
 	
 # ---
 
-exports.shell =  (opt, manifest, provider, node_names, callback) ->
+exports.shell = (opt, manifest, provider, node_names, callback) ->
 	###
 	Starts a shell or executes a command on the selected node.
 	###
@@ -524,5 +525,49 @@ exports.shell =  (opt, manifest, provider, node_names, callback) ->
 		
 		async.waterfall current_actions, callback
 		
+	async.eachSeries node_names, process_node, callback
+	
+# ---
+
+exports.openurl = (opt, manifest, provider, node_names, callback) ->
+	###
+	Open node url in browser.
+	###
+	
+	command = switch
+		when process.platform.match /^win/ then 'start'
+		when process.platform.match /^dar/ then 'open'
+		else 'firefox'
+		
+	#
+	# Invoke for each node.
+	#
+	process_node = (node_name, callback) ->
+		node_def = manifest.nodes[node_name]
+		web_def = node_def.web or {}
+		
+		path = switch
+			when web_def.path then web_def.path
+			else '/'
+			
+		port = switch
+			when web_def.port then web_def.port
+			else 80
+			
+		scheme = switch
+			when web_def.scheme then web_def.scheme
+			when port == 443 then 'https'
+			else 'http'
+			
+		provider.status node_name, (err, state, address) ->
+			return callback err if err
+			return callback new Error "cannot identify address for node #{node_name}" if not address
+			
+			url = "#{scheme}://#{address}:#{port}#{path}"
+			 
+			child_process.exec shell_quote.quote([command, url]), (err) ->
+				return callback err if err
+				return callback null
+				
 	async.eachSeries node_names, process_node, callback
 	
