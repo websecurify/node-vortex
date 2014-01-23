@@ -2,4 +2,12 @@
 
 // ---
 
-require('../lib/vortex').main();
+if (process.env.NODE_ENV == 'development') {
+	require('coffee-script');
+	
+	// ---
+	
+	require('../src/vortex').main();
+} else {
+	require('../lib/vortex').main();
+}
