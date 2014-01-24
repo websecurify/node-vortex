@@ -59,6 +59,7 @@ exports.Provider = class
 	extract_private_key: (node_name) -> @extract_property 'privateKey', node_name
 	extract_passphrase: (node_name) -> @extract_property 'passphrase', node_name
 	extract_ssh_port: (node_name) -> @extract_property 'sshPort', node_name
+	extract_availability_zone: (node_name) -> @extract_property 'availabilityZone', node_name
 	#
 	#
 	#
@@ -105,6 +106,7 @@ exports.Provider = class
 		security_groups = this.extract_security_groups node_name
 		user_data = this.extract_user_data node_name
 		disable_api_termination = this.extract_disable_api_termination node_name
+		extract_availability_zone = this.extract_availability_zone node_name
 		options = {}
 		
 		options.ImageId = image_id if image_id
@@ -113,6 +115,9 @@ exports.Provider = class
 		options.SecurityGroups = security_groups if security_groups
 		options.UserData = user_data if user_data
 		options.DisableApiTermination = disable_api_termination if disable_api_termination
+		placement = {}
+		placement["AvailabilityZone"] = extract_availability_zone if extract_availability_zone
+		options.Placement = placement
 		
 		return options
 		
@@ -305,6 +310,7 @@ exports.Provider = class
 		#
 		# Next we run the instance.
 		#
+
 		run_instance = (callback) =>
 			options = @extract_instance_options node_name
 			
