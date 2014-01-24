@@ -115,9 +115,8 @@ exports.Provider = class
 		options.SecurityGroups = security_groups if security_groups
 		options.UserData = user_data if user_data
 		options.DisableApiTermination = disable_api_termination if disable_api_termination
-		placement = {}
-		placement["AvailabilityZone"] = extract_availability_zone if extract_availability_zone
-		options.Placement = placement
+		options.Placement = 
+			"AvailabilityZone" : extract_availability_zone if extract_availability_zone
 		
 		return options
 		
