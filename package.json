@@ -37,7 +37,8 @@
 		"async": "0.2.9",
 		"vboxmanage": "0.0.15",
 		"logsmith": "0.0.2",
-		"roost": "1.0.12"
+		"roost": "1.0.12",
+		"file-uri-to-path": "*"
 	},
 	
 	"devDependencies": {
