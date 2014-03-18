@@ -119,7 +119,7 @@ exports.Provider = class
 			
 		return callback new Error "unsupported scheme for url #{vm_url}" if spec.protocol not in ['file:', 'http:', 'https:']
 		
-		if spec.protocol == 'file'
+		if spec.protocol == 'file:'
 			if not spec.host
 				local_path = spec.pathname
 			else
