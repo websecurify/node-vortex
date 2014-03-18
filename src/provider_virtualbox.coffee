@@ -6,6 +6,7 @@ path_extra = require 'path-extra'
 vboxmanage = require 'vboxmanage'
 portchecker = require 'portchecker'
 shell_quote = require 'shell-quote'
+uri2path = require 'file-uri-to-path'
 
 # ---
 
@@ -121,7 +122,7 @@ exports.Provider = class
 		
 		if spec.protocol == 'file:'
 			if not spec.host
-				local_path = spec.pathname
+				local_path = uri2path vm_url
 			else
 				local_path = path_extra.resolve path_extra.dirname(@manifest.meta.location), path_extra.join(spec.host, spec.pathname)
 				
